@@ -129,7 +129,7 @@ Vercel will show a progress bar. Wait until it says: **"✓ Ready"**
 Copy your **frontend URL** — looks like:
 
 ```
-https://barber-website-abc123.vercel.app
+https://stilly-barb.vercel.app/
 ```
 
 **SAVE THIS URL!** You'll need it next.

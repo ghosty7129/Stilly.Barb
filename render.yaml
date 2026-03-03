@@ -2,6 +2,7 @@ services:
   - type: web
     name: barber-api
     env: node
+    region: oregon
     rootDir: backend
     buildCommand: npm install
     startCommand: npm start
@@ -11,6 +12,8 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
+      - key: PORT
+        value: 10000
       - key: RATE_LIMIT_MAX
         value: 200
       - key: EMAIL_ENABLED
