@@ -7,13 +7,24 @@
     @apply m-0 p-0 box-border;
   }
   
+  html {
+    @apply scroll-smooth;
+    height: 100%;
+    width: 100%;
+  }
+
   body {
     @apply bg-white text-neutral-800 font-sans antialiased;
     scroll-behavior: smooth;
+    height: 100%;
+    width: 100%;
+    overflow-x: hidden;
   }
 
-  html {
-    @apply scroll-smooth;
+  #root {
+    height: 100%;
+    width: 100%;
+    overflow-x: hidden;
   }
 }
 

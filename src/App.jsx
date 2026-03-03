@@ -28,7 +28,7 @@ function App() {
   }, [])
 
   return (
-    <div className="App">
+    <div className="App min-h-screen w-full overflow-x-hidden">
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/book" element={<Booking />} />

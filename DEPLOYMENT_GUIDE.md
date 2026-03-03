@@ -75,7 +75,7 @@ GitHub will show you commands. In your PowerShell, run these (replace `YOUR_USER
 
 ```powershell
 git branch -M main
-git remote add origin https://github.com/YOUR_USERNAME/barber-website.git
+git remote add origin https://github.com/ghosty7129/Stilly.Barb.git
 git push -u origin main
 ```
 
