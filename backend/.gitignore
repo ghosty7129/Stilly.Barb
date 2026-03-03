@@ -1,0 +1,4 @@
+node_modules/
+database/appointments.json
+.env
+.DS_Store
