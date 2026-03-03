@@ -3,9 +3,8 @@ services:
     name: barber-api
     env: node
     region: oregon
-    rootDir: backend
-    buildCommand: npm install
-    startCommand: npm start
+    buildCommand: cd backend && npm install
+    startCommand: cd backend && npm start
     autoDeploy: true
     plan: free
     healthCheckPath: /api/health
