@@ -1,43 +1,41 @@
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
+import { kv } from '@vercel/kv';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-const DB_FILE = path.join(__dirname, 'appointments.json');
+const APPOINTMENTS_KEY = 'appointments';
 
 // Initialize database
 let appointments = [];
 
-// Load from file if exists
-if (fs.existsSync(DB_FILE)) {
+// Load from Vercel KV on startup
+async function initializeDatabase() {
   try {
-    const data = fs.readFileSync(DB_FILE, 'utf8');
-    appointments = JSON.parse(data);
-    console.log(`✅ Loaded ${appointments.length} appointments from database`);
+    const data = await kv.get(APPOINTMENTS_KEY);
+    if (data) {
+      appointments = Array.isArray(data) ? data : [];
+      console.log(`✅ Loaded ${appointments.length} appointments from Vercel KV`);
+    } else {
+      appointments = [];
+      console.log('✅ Database initialized (empty)');
+    }
   } catch (error) {
-    console.error('Error loading database:', error);
+    console.error('Error loading database from Vercel KV:', error);
     appointments = [];
   }
-} else {
-  // Create empty database file
-  fs.writeFileSync(DB_FILE, JSON.stringify([], null, 2));
-  console.log('✅ Database initialized (empty)');
 }
 
-// Save to file
-const saveToFile = () => {
+// Save to Vercel KV
+const saveToKV = async () => {
   try {
-    fs.writeFileSync(DB_FILE, JSON.stringify(appointments, null, 2));
+    await kv.set(APPOINTMENTS_KEY, appointments);
   } catch (error) {
-    console.error('Error saving database:', error);
+    console.error('Error saving database to Vercel KV:', error);
   }
 };
 
 // Database operations
 const db = {
+    // Initialize on startup
+    initialize: initializeDatabase,
+
   // Get all appointments
   getAll: () => {
     return appointments;
@@ -49,29 +47,29 @@ const db = {
   },
 
   // Create appointment
-  create: (appointment) => {
+  create: async (appointment) => {
     appointments.push(appointment);
-    saveToFile();
+    await saveToKV();
     return appointment;
   },
 
   // Delete appointment
-  delete: (id) => {
+  delete: async (id) => {
     const index = appointments.findIndex(apt => apt.id === id);
     if (index !== -1) {
       appointments.splice(index, 1);
-      saveToFile();
+      await saveToKV();
       return true;
     }
     return false;
   },
 
   // Update appointment
-  update: (id, updates) => {
+  update: async (id, updates) => {
     const index = appointments.findIndex(apt => apt.id === id);
     if (index !== -1) {
       appointments[index] = { ...appointments[index], ...updates };
-      saveToFile();
+      await saveToKV();
       return appointments[index];
     }
     return null;

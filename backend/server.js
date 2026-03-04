@@ -6,6 +6,7 @@ import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import appointmentsRouter from './routes/appointments.js';
+import db from './database/db.js';
 
 dotenv.config();
 
@@ -79,8 +80,12 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Something went wrong!' });
 });
 
-app.listen(PORT, () => {
+// Initialize database and start server
+(async () => {
+  await db.initialize();
+  app.listen(PORT, () => {
   console.log(`✅ Backend server running on port ${PORT} (${NODE_ENV})`);
   console.log(`🔐 Allowed CORS origins: ${allowedOrigins.join(', ')}`);
   console.log(`📧 Email notifications: ${process.env.EMAIL_ENABLED === 'true' ? 'ENABLED' : 'DISABLED'}`);
-});
+  });
+})();
