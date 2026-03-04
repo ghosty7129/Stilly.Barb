@@ -17,22 +17,22 @@ export const HAIRSTYLE_DURATION = {
 
 // Services for booking (actual services)
 export const SERVICES = [
-  { id: 'normal', name: 'Обикновена прическа', duration: 60, price: 15 },
+  { id: 'normal', name: 'Подстрижка', duration: 60, price: 15 },
   { id: 'buzzcut', name: 'Buzzcut', duration: 30, price: 15 },
-  { id: 'beard', name: 'Beard', duration: 30, price: 7 }
+  { id: 'beard', name: 'Оформяне на брада', duration: 30, price: 7 }
 ]
 
 // Display services for home page (decorative)
 export const DISPLAY_SERVICES = [
-  { id: 'fade', name: 'Обикновена прическа', duration: 60, price: 15 },
+  { id: 'fade', name: 'Подстрижка', duration: 60, price: 15 },
   { id: 'buzzcut', name: 'Buzzcut', duration: 30, price: 15 },
-  { id: 'beard', name: 'Брада', duration: 30, price: 7 },
+  { id: 'beard', name: 'Оформяне на брада', duration: 30, price: 7 },
 
 ]
 
 export const ADDONS = [
-  { id: 'beard-addon', name: 'Брада', duration: 30, price: 7 },
-  { id: 'eyebrows', name: 'Вежди', duration: 30, displayDuration: 15, price: 5 }
+  { id: 'beard-addon', name: 'Оформяне на брада', duration: 30, price: 7 },
+  { id: 'eyebrows', name: 'Оформяне на вежди', duration: 30, displayDuration: 15, price: 5 }
 ]
 
 /**
