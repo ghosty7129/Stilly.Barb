@@ -1,40 +1,58 @@
-import { kv } from '@vercel/kv';
+import { list, put } from '@vercel/blob';
 
-const APPOINTMENTS_KEY = 'appointments';
-
-// Initialize database
+const APPOINTMENTS_PATH = 'appointments/appointments.json';
 let appointments = [];
 
-// Load from Vercel KV on startup
+const fetchBlobJson = async (url) => {
+  const response = await fetch(url, {
+    headers: {
+      Authorization: `Bearer ${process.env.BLOB_READ_WRITE_TOKEN}`
+    }
+  });
+
+  if (!response.ok) {
+    throw new Error(`Blob fetch failed (${response.status})`);
+  }
+
+  return response.json();
+};
+
 async function initializeDatabase() {
   try {
-    const data = await kv.get(APPOINTMENTS_KEY);
-    if (data) {
-      appointments = Array.isArray(data) ? data : [];
-      console.log(`✅ Loaded ${appointments.length} appointments from Vercel KV`);
-    } else {
+    const { blobs } = await list({ prefix: APPOINTMENTS_PATH, limit: 1 });
+
+    if (!blobs || blobs.length === 0) {
       appointments = [];
-      console.log('✅ Database initialized (empty)');
+      console.log('✅ Database initialized (empty Blob)');
+      return;
     }
+
+    const blobData = await fetchBlobJson(blobs[0].url);
+    appointments = Array.isArray(blobData) ? blobData : [];
+    console.log(`✅ Loaded ${appointments.length} appointments from Vercel Blob`);
   } catch (error) {
-    console.error('Error loading database from Vercel KV:', error);
+    console.error('Error loading database from Vercel Blob:', error);
     appointments = [];
   }
 }
 
-// Save to Vercel KV
-const saveToKV = async () => {
+const saveToBlob = async () => {
   try {
-    await kv.set(APPOINTMENTS_KEY, appointments);
+    await put(APPOINTMENTS_PATH, JSON.stringify(appointments, null, 2), {
+      access: 'private',
+      contentType: 'application/json',
+      addRandomSuffix: false,
+      allowOverwrite: true
+    });
   } catch (error) {
-    console.error('Error saving database to Vercel KV:', error);
+    console.error('Error saving database to Vercel Blob:', error);
+    throw error;
   }
 };
 
 // Database operations
 const db = {
-    // Initialize on startup
-    initialize: initializeDatabase,
+  initialize: initializeDatabase,
 
   // Get all appointments
   getAll: () => {
@@ -49,7 +67,7 @@ const db = {
   // Create appointment
   create: async (appointment) => {
     appointments.push(appointment);
-    await saveToKV();
+    await saveToBlob();
     return appointment;
   },
 
@@ -58,7 +76,7 @@ const db = {
     const index = appointments.findIndex(apt => apt.id === id);
     if (index !== -1) {
       appointments.splice(index, 1);
-      await saveToKV();
+      await saveToBlob();
       return true;
     }
     return false;
@@ -69,7 +87,7 @@ const db = {
     const index = appointments.findIndex(apt => apt.id === id);
     if (index !== -1) {
       appointments[index] = { ...appointments[index], ...updates };
-      await saveToKV();
+      await saveToBlob();
       return appointments[index];
     }
     return null;
