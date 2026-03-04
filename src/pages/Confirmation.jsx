@@ -122,7 +122,7 @@ const Confirmation = () => {
                     </svg>
                   </div>
                   <div>
-                    <p className="text-sm text-neutral-600">Add-services</p>
+                    <p className="text-sm text-neutral-600">{t('addons')}</p>
                     <p className="font-semibold">{resolvedAddons.join(', ')}</p>
                   </div>
                 </div>
@@ -135,7 +135,7 @@ const Confirmation = () => {
                   </svg>
                 </div>
                 <div>
-                  <p className="text-sm text-neutral-600">Date & Time</p>
+                  <p className="text-sm text-neutral-600">{t('dateTime')}</p>
                   <p className="font-semibold text-lg">
                     {format(new Date(booking.date), 'EEEE, MMMM d, yyyy')}
                   </p>
@@ -158,10 +158,28 @@ const Confirmation = () => {
               )}
             </div>
 
+            {/* Total Price */}
+            {(() => {
+              const servicePrice = service?.price || 0
+              const addonPrices = (Array.isArray(booking.addons) ? booking.addons : []).reduce((sum, addonId) => {
+                const addon = ADDONS.find(a => a.id === addonId)
+                return sum + (addon?.price || 0)
+              }, 0)
+              const totalPrice = servicePrice + addonPrices
+              return (
+                <div className="mt-6 p-4 bg-accent-gold/20 rounded-sm border-2 border-accent-gold">
+                  <div className="flex justify-between items-center">
+                    <p className="text-lg font-semibold text-neutral-800">{t('totalPrice')}:</p>
+                    <p className="text-2xl font-bold text-accent-gold">€{totalPrice.toFixed(2)}</p>
+                  </div>
+                </div>
+              )
+            })()}
+
             {/* Action Buttons */}
             <div className="mt-8 space-y-3">
               <Link to="/" className="btn-primary w-full text-center block">
-                Back to Home
+                {t('backToHome')}
               </Link>
               <Link to="/book" className="btn-secondary w-full text-center block">
                 {t('backToBooking')}

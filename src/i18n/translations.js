@@ -69,6 +69,7 @@ export const translations = {
     appointmentDetails: 'Appointment Details',
     confirmationMessage: 'Thank you for booking with us. We look forward to seeing you!',
     backToBooking: '← Book Another',
+    dateTime: 'Date & Time',
 
     // Admin
     adminPanel: 'Admin Panel',
@@ -160,6 +161,7 @@ export const translations = {
     appointmentDetails: 'Детайли на срещата',
     confirmationMessage: 'Благодарим, че резервирахте с нас. Ние се надяваме да се видим!',
     backToBooking: '← Резервирайте друга',
+    dateTime: 'Дата и час',
 
     // Admin
     adminPanel: 'Админ панел',
