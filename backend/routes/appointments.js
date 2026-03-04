@@ -12,7 +12,7 @@ const safeString = (value, maxLength = 255) => {
 };
 
 // Get all appointments
-router.get('/', async (req, res) => {
+router.get('/', (req, res) => {
   try {
     const appointments = db.getAll();
     res.json(appointments);
@@ -23,7 +23,7 @@ router.get('/', async (req, res) => {
 });
 
 // Get appointment by ID
-router.get('/:id', async (req, res) => {
+router.get('/:id', (req, res) => {
   try {
     const appointment = db.getById(req.params.id);
     if (!appointment) {
@@ -91,7 +91,7 @@ router.post('/', async (req, res) => {
       created_at: new Date().toISOString()
     };
 
-    await db.create(newAppointment);
+    db.create(newAppointment);
 
     // Send confirmation email
     try {
@@ -117,9 +117,9 @@ router.post('/', async (req, res) => {
 });
 
 // Delete appointment
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', (req, res) => {
   try {
-    const deleted = await db.delete(req.params.id);
+    const deleted = db.delete(req.params.id);
     
     if (!deleted) {
       return res.status(404).json({ error: 'Appointment not found' });
@@ -133,14 +133,14 @@ router.delete('/:id', async (req, res) => {
 });
 
 // Update appointment status
-router.patch('/:id/status', async (req, res) => {
+router.patch('/:id/status', (req, res) => {
   try {
     const { status } = req.body;
     if (!status) {
       return res.status(400).json({ error: 'Status is required' });
     }
 
-    const updated = await db.update(req.params.id, { status });
+    const updated = db.update(req.params.id, { status });
 
     if (!updated) {
       return res.status(404).json({ error: 'Appointment not found' });

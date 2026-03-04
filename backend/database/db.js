@@ -1,44 +1,43 @@
-import { put, get } from '@vercel/blob';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
 
-const APPOINTMENTS_KEY = 'appointments.json';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+const DB_FILE = path.join(__dirname, 'appointments.json');
+
+// Initialize database
 let appointments = [];
 
-async function initializeDatabase() {
+// Load from file if exists
+if (fs.existsSync(DB_FILE)) {
   try {
-    const blob = await get(APPOINTMENTS_KEY);
-    
-    if (!blob) {
-      appointments = [];
-      console.log('✅ Database initialized (empty Blob)');
-      return;
-    }
-
-    const text = await blob.text();
-    const blobData = JSON.parse(text);
-    appointments = Array.isArray(blobData) ? blobData : [];
-    console.log(`✅ Loaded ${appointments.length} appointments from Vercel Blob`);
+    const data = fs.readFileSync(DB_FILE, 'utf8');
+    appointments = JSON.parse(data);
+    console.log(`✅ Loaded ${appointments.length} appointments from database`);
   } catch (error) {
-    console.error('Error loading database from Vercel Blob:', error);
+    console.error('Error loading database:', error);
     appointments = [];
   }
+} else {
+  // Create empty database file
+  fs.writeFileSync(DB_FILE, JSON.stringify([], null, 2));
+  console.log('✅ Database initialized (empty)');
 }
 
-const saveToBlob = async () => {
+// Save to file
+const saveToFile = () => {
   try {
-    await put(APPOINTMENTS_KEY, JSON.stringify(appointments, null, 2), {
-      access: 'private',
-      contentType: 'application/json'
-    });
+    fs.writeFileSync(DB_FILE, JSON.stringify(appointments, null, 2));
   } catch (error) {
-    console.error('Error saving database to Vercel Blob:', error);
-    throw error;
+    console.error('Error saving database:', error);
   }
 };
 
 // Database operations
 const db = {
-  initialize: initializeDatabase,
-
   // Get all appointments
   getAll: () => {
     return appointments;
@@ -50,29 +49,29 @@ const db = {
   },
 
   // Create appointment
-  create: async (appointment) => {
+  create: (appointment) => {
     appointments.push(appointment);
-    await saveToBlob();
+    saveToFile();
     return appointment;
   },
 
   // Delete appointment
-  delete: async (id) => {
+  delete: (id) => {
     const index = appointments.findIndex(apt => apt.id === id);
     if (index !== -1) {
       appointments.splice(index, 1);
-      await saveToBlob();
+      saveToFile();
       return true;
     }
     return false;
   },
 
   // Update appointment
-  update: async (id, updates) => {
+  update: (id, updates) => {
     const index = appointments.findIndex(apt => apt.id === id);
     if (index !== -1) {
       appointments[index] = { ...appointments[index], ...updates };
-      await saveToBlob();
+      saveToFile();
       return appointments[index];
     }
     return null;
