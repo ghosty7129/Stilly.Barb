@@ -24,7 +24,7 @@ export const translations = {
     aboutParagraph3: 'Step into our space and discover why we\'re not just a barbershop – we\'re a destination for those who demand excellence.',
     yearsExperience: 'Years Experience',
     happyClients: 'Happy Clients',
-    satisfaction: 'Satisfaction',
+    satisfaction: 'Satisfied Clients',
 
     // Services
     ourServices: 'Our Services',
@@ -117,9 +117,9 @@ export const translations = {
     aboutParagraph1: 'В Stilly.Barb вярваме, че грижата за външния вид е форма на изкуство. Нашият екип от майсторски бръснари съчетава десетилетия традиционно барберско мастерство с авангардни съвременни техники, за да предостави несравнимо преживяване.',
     aboutParagraph2: 'Всеки клиент получава персонализирано внимание в нашата куриозна среда. Използваме само премиум продукти и поддържаме най-високите стандарти на хигиена и професионализъм.',
     aboutParagraph3: 'Влезте в нашото пространство и открийте защо ние не сме просто фризьорско съоръжение - ние сме място за хора, които изискват отличност.',
-    yearsExperience: 'Години Опит',
-    happyClients: 'Доволни Клиенти',
-    satisfaction: 'Задоволство',
+    yearsExperience: 'години опит',
+    happyClients: 'доволни клиенти',
+    satisfaction: 'доволни клиенти',
 
     // Services
     ourServices: 'Нашите услуги',

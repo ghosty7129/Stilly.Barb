@@ -39,15 +39,15 @@ const About = () => {
 
             <div className="grid grid-cols-3 gap-8 mt-12">
               <div className="text-center">
-                <div className="text-4xl font-bold text-accent-gold mb-2">10+</div>
+                <div className="text-4xl font-bold text-accent-gold mb-2">3+</div>
                 <div className="text-sm text-neutral-600">{t('yearsExperience')}</div>
               </div>
               <div className="text-center">
-                <div className="text-4xl font-bold text-accent-gold mb-2">5K+</div>
+                <div className="text-4xl font-bold text-accent-gold mb-2">300+</div>
                 <div className="text-sm text-neutral-600">{t('happyClients')}</div>
               </div>
               <div className="text-center">
-                <div className="text-4xl font-bold text-accent-gold mb-2">100%</div>
+                <div className="text-4xl font-bold text-accent-gold mb-2">99%+</div>
                 <div className="text-sm text-neutral-600">{t('satisfaction')}</div>
               </div>
             </div>
