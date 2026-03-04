@@ -1,33 +1,20 @@
-import { list, put } from '@vercel/blob';
+import { put, get } from '@vercel/blob';
 
-const APPOINTMENTS_PATH = 'appointments/appointments.json';
+const APPOINTMENTS_KEY = 'appointments.json';
 let appointments = [];
-
-const fetchBlobJson = async (url) => {
-  const response = await fetch(url, {
-    headers: {
-      Authorization: `Bearer ${process.env.BLOB_READ_WRITE_TOKEN}`
-    }
-  });
-
-  if (!response.ok) {
-    throw new Error(`Blob fetch failed (${response.status})`);
-  }
-
-  return response.json();
-};
 
 async function initializeDatabase() {
   try {
-    const { blobs } = await list({ prefix: APPOINTMENTS_PATH, limit: 1 });
-
-    if (!blobs || blobs.length === 0) {
+    const blob = await get(APPOINTMENTS_KEY);
+    
+    if (!blob) {
       appointments = [];
       console.log('✅ Database initialized (empty Blob)');
       return;
     }
 
-    const blobData = await fetchBlobJson(blobs[0].url);
+    const text = await blob.text();
+    const blobData = JSON.parse(text);
     appointments = Array.isArray(blobData) ? blobData : [];
     console.log(`✅ Loaded ${appointments.length} appointments from Vercel Blob`);
   } catch (error) {
@@ -38,11 +25,9 @@ async function initializeDatabase() {
 
 const saveToBlob = async () => {
   try {
-    await put(APPOINTMENTS_PATH, JSON.stringify(appointments, null, 2), {
+    await put(APPOINTMENTS_KEY, JSON.stringify(appointments, null, 2), {
       access: 'private',
-      contentType: 'application/json',
-      addRandomSuffix: false,
-      allowOverwrite: true
+      contentType: 'application/json'
     });
   } catch (error) {
     console.error('Error saving database to Vercel Blob:', error);
