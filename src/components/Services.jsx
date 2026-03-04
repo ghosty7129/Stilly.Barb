@@ -88,7 +88,7 @@ const Services = () => {
                     {service.name}
                   </h3>
                   <span className="text-2xl font-bold text-accent-gold">
-                    ${service.price}
+                    €{service.price}
                   </span>
                 </div>
 

@@ -110,7 +110,7 @@ const Confirmation = () => {
                 <div>
                   <p className="text-sm text-neutral-600">{t('selectService')}</p>
                   <p className="font-semibold">{resolvedServiceName}</p>
-                  <p className="text-sm text-neutral-500">{service?.duration} minutes • ${service?.price}</p>
+                  <p className="text-sm text-neutral-500">{service?.duration} minutes • €{service?.price}</p>
                 </div>
               </div>
 

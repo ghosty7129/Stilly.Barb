@@ -183,7 +183,7 @@ Wait for Render to build and deploy. Look for: **"✓ Service Started"**
 Copy your **backend URL** — looks like:
 
 ```
-https://barber-api-abc123.onrender.com
+https://stilly-barb.onrender.com/
 ```
 
 **SAVE THIS URL!** You'll need it next.

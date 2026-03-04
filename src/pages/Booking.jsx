@@ -286,7 +286,7 @@ const Booking = () => {
                       <div className="flex flex-col items-center text-center">
                         <h3 className="font-semibold text-lg mb-2">{service.name}</h3>
                         <p className="text-sm text-neutral-600 mb-2">{service.duration} min</p>
-                        <span className="text-xl font-bold text-accent-gold">${service.price}</span>
+                        <span className="text-xl font-bold text-accent-gold">€{service.price}</span>
                       </div>
                     </label>
                   ))}
@@ -351,7 +351,7 @@ const Booking = () => {
                             </p>
                           </div>
                         </div>
-                        <span className="text-lg font-bold text-accent-gold">+${addon.price}</span>
+                        <span className="text-lg font-bold text-accent-gold">+€{addon.price}</span>
                       </label>
                     )
                   })}
@@ -374,7 +374,7 @@ const Booking = () => {
                         transition={{ duration: 0.4, ease: "easeInOut" }}
                       >
                         <span>{t('totalPrice')}:</span>
-                        <span className="text-accent-gold">${calculateTotalPrice()}</span>
+                        <span className="text-accent-gold">€{calculateTotalPrice()}</span>
                       </motion.div>
                     </motion.div>
                   )}
