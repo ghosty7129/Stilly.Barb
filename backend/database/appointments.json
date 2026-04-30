@@ -30,5 +30,86 @@
     "notes": "addon check",
     "status": "pending",
     "created_at": "2026-03-03T12:04:38.028Z"
+  },
+  {
+    "id": "d5bed293-66a0-4d7b-afc6-67381e5e48e7",
+    "name": "Никола",
+    "customer_name": "Никола",
+    "email": "mandjichka123@gmail.com",
+    "phone": "0123456789",
+    "service": "normal",
+    "service_name": "Подстрижка на Средна/Дълга коса",
+    "addons": [
+      "beard-addon",
+      "hair-wash",
+      "eyebrows"
+    ],
+    "addon_names": [
+      "Оформяне на брада",
+      "Измиване на коса",
+      "Оформяне на вежди"
+    ],
+    "date": "2026-04-28",
+    "time": "12:00",
+    "notes": "тест123",
+    "status": "pending",
+    "created_at": "2026-04-20T18:57:35.982Z"
+  },
+  {
+    "id": "1e4326f7-390a-4097-81a6-b30fc5d5a8d3",
+    "name": "Nikola Ivanov",
+    "customer_name": "Nikola Ivanov",
+    "email": "niko1bgvr@gmail.com",
+    "phone": "0123456789",
+    "service": "normal",
+    "service_name": "Подстрижка на Средна/Дълга коса",
+    "addons": [
+      "beard-addon",
+      "hair-wash",
+      "eyebrows"
+    ],
+    "addon_names": [
+      "Оформяне на брада",
+      "Измиване на коса",
+      "Оформяне на вежди"
+    ],
+    "date": "2026-05-06",
+    "time": "14:00",
+    "notes": "test123",
+    "status": "pending",
+    "created_at": "2026-04-29T18:33:06.465Z"
+  },
+  {
+    "id": "ebae3c78-555c-4607-b3cb-c369f982a68b",
+    "name": "Nikola Ivanovy",
+    "customer_name": "Nikola Ivanovy",
+    "email": "niko1bgvr@gmail.com",
+    "phone": "0123456789",
+    "service": "normal",
+    "service_name": "Подстрижка на Средна/Дълга коса",
+    "service_duration": 60,
+    "service_price": 15,
+    "addons": [
+      "beard-addon"
+    ],
+    "addon_names": [
+      "Оформяне на брада"
+    ],
+    "addon_details": [
+      {
+        "id": "beard-addon",
+        "name": "Оформяне на брада",
+        "duration": 30,
+        "price": 7
+      }
+    ],
+    "total_duration": 90,
+    "total_price": 22,
+    "language": "bg",
+    "date": "2026-05-16",
+    "time": "14:00",
+    "notes": "ysy",
+    "status": "pending",
+    "created_at": "2026-04-29T20:07:08.763Z"
   }
 ]

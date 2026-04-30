@@ -6,6 +6,7 @@ import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import appointmentsRouter from './routes/appointments.js';
+import authRouter from './routes/auth.js';
 
 dotenv.config();
 
@@ -57,6 +58,7 @@ app.use(apiLimiter);
 app.use(express.json({ limit: '20kb' }));
 
 // Routes
+app.use('/api/auth', authRouter);
 app.use('/api/appointments', appointmentsRouter);
 
 // Health check

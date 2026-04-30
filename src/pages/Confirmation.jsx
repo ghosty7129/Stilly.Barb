@@ -15,7 +15,7 @@ const Confirmation = () => {
     return (
       <div className="min-h-screen flex items-center justify-center bg-neutral-50">
         <div className="text-center">
-          <p className="text-xl mb-4">No booking information found</p>
+          <p className="text-xl mb-4">{t('noBookingFound')}</p>
           <Link to="/book" className="btn-primary">
             {t('bookNow')}
           </Link>
@@ -36,7 +36,7 @@ const Confirmation = () => {
       : [])
 
   return (
-    <div className="min-h-screen bg-neutral-50 flex items-center justify-center py-16">
+    <div className="min-h-screen bg-neutral-50 flex items-center justify-center py-16 pt-28 sm:pt-24">
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -189,8 +189,8 @@ const Confirmation = () => {
             {/* Additional Info */}
             <div className="mt-8 p-4 bg-blue-50 border border-blue-200 rounded-sm">
               <p className="text-sm text-blue-800">
-                <strong>Note:</strong> A confirmation email has been sent to {booking.email}. 
-                Please arrive 5 minutes early for your appointment.
+                <strong>{language === 'bg' ? 'Бележка:' : 'Note:'}</strong>{' '}
+                {t('confirmationEmailNote').replace('{email}', booking.email)}
               </p>
             </div>
           </div>

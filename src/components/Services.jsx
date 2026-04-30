@@ -11,14 +11,16 @@ const Services = () => {
   const { language } = useLanguage()
   const t = (key) => getTranslation(language, key)
 
-  // Map service names to translation keys
-  const getServiceDescription = (serviceId) => {
-    const descriptionMap = {
-      'buzzcut': language === 'en' ? 'Professional buzzcut service delivered with precision and care.' : 'Професионална buzzcut услуга с прецизност и грижа.',
-      'fade': language === 'en' ? 'Professional fade service delivered with precision and care.' : 'Професионална fade услуга с прецизност и грижа.',
-      'beard': language === 'en' ? 'Professional beard service delivered with precision and care.' : 'Професионално оформяне на брада с прецизност и грижа.',
+  const handleServiceClick = (serviceId) => {
+    if (serviceId === 'hair-dye') {
+      const contactSection = document.getElementById('contact')
+      if (contactSection) {
+        contactSection.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }
+      return
     }
-    return descriptionMap[serviceId] || ''
+
+    navigate('/book')
   }
 
   const containerVariants = {
@@ -63,7 +65,7 @@ const Services = () => {
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+          className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-3 md:gap-6"
         >
           {DISPLAY_SERVICES.map((service, index) => (
             <motion.div
@@ -71,8 +73,8 @@ const Services = () => {
               variants={itemVariants}
               onHoverStart={() => setHoveredIndex(index)}
               onHoverEnd={() => setHoveredIndex(null)}
-              onClick={() => navigate('/book')}
-              className="group relative bg-white p-8 rounded-sm hover:shadow-2xl transition-all duration-300 border border-neutral-200 hover:border-neutral-400 overflow-hidden cursor-pointer"
+              onClick={() => handleServiceClick(service.id)}
+              className="group relative flex h-full min-h-[180px] cursor-pointer overflow-hidden rounded-sm border border-neutral-200 bg-white p-2.5 sm:p-3.5 md:p-5 transition-all duration-300 hover:border-neutral-400 hover:shadow-2xl"
             >
               {/* Hover background effect */}
               <motion.div
@@ -82,33 +84,42 @@ const Services = () => {
                 transition={{ duration: 0.3 }}
               />
 
-              <div className="relative z-10">
-                <div className="flex justify-between items-start mb-4">
-                  <h3 className="font-display text-2xl font-semibold text-neutral-700 group-hover:text-neutral-900 transition-colors">
+              <div className="relative z-10 flex h-full w-full flex-col">
+                <div className="mb-2.5 sm:mb-4 flex min-h-[100px] sm:min-h-[120px] flex-col text-center">
+                  <h3 className="flex min-h-[56px] sm:min-h-[78px] items-center justify-center font-display text-base sm:text-2xl font-semibold text-neutral-700 group-hover:text-neutral-900 transition-colors leading-tight">
                     {service.name}
                   </h3>
-                  <span className="text-2xl font-bold text-accent-gold">
-                    €{service.price}
-                  </span>
+                  {(service.price !== null && service.price !== undefined && service.price !== '') && (
+                    <span className="mt-1.5 sm:mt-2.5 flex h-8 sm:h-9 items-center justify-center text-base sm:text-xl font-bold text-accent-gold">
+                      {typeof service.price === 'number' ? `€${service.price}` : service.price}
+                    </span>
+                  )}
                 </div>
 
-                <p className="text-neutral-600 mb-4 leading-relaxed">
-                  {getServiceDescription(service.id)}
-                </p>
+                <div className="mt-auto flex items-center justify-between pt-2.5 sm:pt-4 pr-10 sm:pr-12 text-xs sm:text-sm text-neutral-500">
+                  <div>
+                    {service.duration > 0 ? (
+                      <span className="flex items-center">
+                        <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        {service.duration} min
+                      </span>
+                    ) : service.duration === 0 ? (
+                      <span />
+                    ) : (
+                      <span className="text-left text-xs sm:text-sm font-medium text-neutral-600 max-w-[80%]">
+                        {t('contactBarberForDetails')}
+                      </span>
+                    )}
+                  </div>
 
-                <div className="flex items-center justify-between text-sm text-neutral-500">
-                  <span className="flex items-center">
-                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    {service.duration} min
-                  </span>
-                  
+                  {/* action button positioned to avoid squeezing content */}
                   <motion.div
-                    className="w-8 h-8 rounded-full border-2 border-primary flex items-center justify-center group-hover:bg-primary group-hover:scale-110 transition-all"
+                    className="absolute right-2.5 bottom-2.5 w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 border-primary bg-white shadow-sm flex items-center justify-center transition-all group-hover:scale-110 group-hover:bg-primary z-10"
                     whileHover={{ rotate: 90 }}
                   >
-                    <svg className="w-4 h-4 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-primary group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                     </svg>
                   </motion.div>

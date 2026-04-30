@@ -1,12 +1,14 @@
-// Business hours: 09:00 - 19:00 (7 PM)
+// Business hours per day of week
+// Weekdays (Mon-Fri): 10:00 - 19:00
+// Weekends (Sat-Sun): 11:00 - 17:00
 // Each appointment slot is 30 minutes
-// Duration depends on hairstyle: Buzzcut = 30min, Other = 60min
 
 export const BUSINESS_HOURS = {
-  start: 9,
-  end: 19 // 7 PM
+  weekday: { start: 10, end: 19 },    // Mon-Fri: 10:00 AM - 7 PM
+  weekend: { start: 11, end: 17 }     // Sat-Sun: 11:00 AM - 5 PM
 }
 
+// Legacy fallback for compatibility
 export const APPOINTMENT_DURATION = 30 // Base slot duration in minutes
 
 // Hairstyle durations
@@ -17,35 +19,57 @@ export const HAIRSTYLE_DURATION = {
 
 // Services for booking (actual services)
 export const SERVICES = [
-  { id: 'normal', name: 'Подстрижка', duration: 60, price: 15 },
-  { id: 'buzzcut', name: 'Buzzcut', duration: 30, price: 15 },
-  { id: 'beard', name: 'Оформяне на брада', duration: 30, price: 7 }
+  { id: 'normal', name: 'Подстрижка на Средна/Дълга коса', duration: 60, price: 15 },
+  { id: 'buzzcut', name: 'Къса коса / Фейд', duration: 30, price: 12 },
+  { id: 'beard', name: 'Оформяне на брада', duration: 30, price: 12 }
 ]
 
 // Display services for home page (decorative)
 export const DISPLAY_SERVICES = [
-  { id: 'fade', name: 'Подстрижка', duration: 60, price: 15 },
-  { id: 'buzzcut', name: 'Buzzcut', duration: 30, price: 15 },
-  { id: 'beard', name: 'Оформяне на брада', duration: 30, price: 7 },
+  { id: 'fade', name: 'Подстрижка на Средна/Дълга коса', duration: 60, price: 15 },
+  { id: 'buzzcut', name: 'Къса коса / Фейд', duration: 30, price: 12 },
+  { id: 'beard', name: 'Оформяне на брада', duration: 30, price: 12 },
+  { id: 'eyebrows', name: 'Оформяне на вежди', duration: 15, price: 3 },
+  { id: 'hair-wash', name: 'Измиване на коса', duration: 0, price: 2 },
+  { id: 'hair-dye', name: 'Боядисване на коса', duration: null, price: '', contactRequired: true },
 
 ]
 
 export const ADDONS = [
   { id: 'beard-addon', name: 'Оформяне на брада', duration: 30, price: 7 },
-  { id: 'eyebrows', name: 'Оформяне на вежди', duration: 30, displayDuration: 15, price: 5 }
+  { id: 'eyebrows', name: 'Оформяне на вежди', duration: 30, displayDuration: 15, price: 3 },
+  { id: 'hair-wash', name: 'Измиване на коса', duration: 0, price: 2 }
 ]
+
+/**
+ * Get business hours for a specific date based on day of week
+ * @param {string} dateString - Date in YYYY-MM-DD format
+ * @returns {Object} {start: hour, end: hour} for that day
+ */
+const getBusinessHoursForDate = (dateString) => {
+  const date = new Date(dateString + 'T00:00:00Z')
+  const dayOfWeek = date.getUTCDay() // 0=Sunday, 1=Monday, ..., 6=Saturday
+  
+  // Saturday (6) or Sunday (0) = weekend
+  if (dayOfWeek === 0 || dayOfWeek === 6) {
+    return BUSINESS_HOURS.weekend
+  }
+  // Monday-Friday = weekday
+  return BUSINESS_HOURS.weekday
+}
 
 /**
  * Generate available time slots for a given date and total duration
  * @param {string} date - Date in YYYY-MM-DD format
  * @param {Array} existingBookings - Array of existing bookings for the date
  * @param {number} duration - Total duration in minutes (service + addons)
- * @returns {Array} Array of available time slots
+ * @returns {Array} Array of time slots with availability status
  */
 export const generateTimeSlots = (date, existingBookings = [], duration = 60) => {
   const slots = []
   const slotDuration = 30 // Each slot is 30 minutes
-  const totalSlots = (BUSINESS_HOURS.end - BUSINESS_HOURS.start) * 2 // 2 slots per hour
+  const businessHours = getBusinessHoursForDate(date)
+  const totalSlots = (businessHours.end - businessHours.start) * 2 // 2 slots per hour
   
   // Helper function to check if a specific time slot is occupied by any existing booking
   const isTimeSlotOccupied = (checkTimeSlot) => {
@@ -63,11 +87,11 @@ export const generateTimeSlots = (date, existingBookings = [], duration = 60) =>
       
       // Parse times to minutes since start of day
       const [bookingHour, bookingMin] = booking.time.split(':').map(Number)
-      const bookingStartMinutes = (bookingHour - BUSINESS_HOURS.start) * 60 + bookingMin
+      const bookingStartMinutes = (bookingHour - businessHours.start) * 60 + bookingMin
       const bookingEndMinutes = bookingStartMinutes + bookingDuration
       
       const [checkHour, checkMin] = checkTimeSlot.split(':').map(Number)
-      const checkStartMinutes = (checkHour - BUSINESS_HOURS.start) * 60 + checkMin
+      const checkStartMinutes = (checkHour - businessHours.start) * 60 + checkMin
       
       // Check if this slot falls within the booking's duration
       return checkStartMinutes >= bookingStartMinutes && checkStartMinutes < bookingEndMinutes
@@ -75,23 +99,40 @@ export const generateTimeSlots = (date, existingBookings = [], duration = 60) =>
   }
   
   for (let slotIndex = 0; slotIndex < totalSlots; slotIndex++) {
-    const hour = BUSINESS_HOURS.start + Math.floor(slotIndex / 2)
+    const hour = businessHours.start + Math.floor(slotIndex / 2)
     const minutes = (slotIndex % 2) * 30
     const timeSlot = `${String(hour).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`
     
     // Check if this slot and required consecutive slots are available
     const requiredSlots = Math.ceil(duration / slotDuration)
     let isAvailable = true
+    let reasonUnavailable = null
     
-    for (let i = 0; i < requiredSlots; i++) {
-      const checkSlotIndex = slotIndex + i
-      const checkHour = BUSINESS_HOURS.start + Math.floor(checkSlotIndex / 2)
-      const checkMinutes = (checkSlotIndex % 2) * 30
-      const checkTimeSlot = `${String(checkHour).padStart(2, '0')}:${String(checkMinutes).padStart(2, '0')}`
-      
-      if (isTimeSlotOccupied(checkTimeSlot)) {
-        isAvailable = false
-        break
+    // First check: would this appointment extend beyond business hours?
+    const appointmentEndHour = hour + Math.floor((minutes + duration) / 60)
+    const appointmentEndMinutes = (minutes + duration) % 60
+    const totalMinutesFromStart = (hour - businessHours.start) * 60 + minutes
+    const totalMinutesEnd = totalMinutesFromStart + duration
+    const businessMinutesEnd = (businessHours.end - businessHours.start) * 60
+    
+    if (totalMinutesEnd > businessMinutesEnd) {
+      isAvailable = false
+      reasonUnavailable = 'exceeds_workday'
+    }
+    
+    // Second check: is this slot occupied by existing bookings?
+    if (isAvailable) {
+      for (let i = 0; i < requiredSlots; i++) {
+        const checkSlotIndex = slotIndex + i
+        const checkHour = businessHours.start + Math.floor(checkSlotIndex / 2)
+        const checkMinutes = (checkSlotIndex % 2) * 30
+        const checkTimeSlot = `${String(checkHour).padStart(2, '0')}:${String(checkMinutes).padStart(2, '0')}`
+        
+        if (isTimeSlotOccupied(checkTimeSlot)) {
+          isAvailable = false
+          reasonUnavailable = 'occupied'
+          break
+        }
       }
     }
     
@@ -99,7 +140,8 @@ export const generateTimeSlots = (date, existingBookings = [], duration = 60) =>
     slots.push({
       time: timeSlot,
       available: isAvailable,
-      duration: duration
+      duration: duration,
+      reason: reasonUnavailable // 'exceeds_workday' or 'occupied'
     })
   }
   

@@ -45,8 +45,14 @@ router.post('/', async (req, res) => {
       phone,
       service,
       serviceName,
+      serviceDuration,
+      servicePrice,
       addons,
       addonNames,
+      addonDetails,
+      totalDuration,
+      totalPrice,
+      language,
       date,
       time,
       notes
@@ -57,9 +63,12 @@ router.post('/', async (req, res) => {
     const normalizedPhone = safeString(phone, 40);
     const normalizedService = safeString(service, 80);
     const normalizedServiceName = safeString(serviceName || service, 120);
+    const normalizedServiceDuration = Number.isFinite(Number(serviceDuration)) ? Number(serviceDuration) : null;
+    const normalizedServicePrice = Number.isFinite(Number(servicePrice)) ? Number(servicePrice) : null;
     const normalizedDate = safeString(date, 20);
     const normalizedTime = safeString(time, 10);
     const normalizedNotes = safeString(notes || '', 1000);
+    const normalizedLanguage = safeString(language || 'bg', 8) || 'bg';
 
     // Validation
     if (!normalizedCustomerName || !normalizedEmail || !normalizedPhone || !normalizedService || !normalizedDate || !normalizedTime) {
@@ -72,6 +81,16 @@ router.post('/', async (req, res) => {
 
     const normalizedAddons = Array.isArray(addons) ? addons.map((addon) => safeString(addon, 80)).filter(Boolean) : [];
     const normalizedAddonNames = Array.isArray(addonNames) ? addonNames.map((addon) => safeString(addon, 120)).filter(Boolean) : [];
+    const normalizedAddonDetails = Array.isArray(addonDetails)
+      ? addonDetails.map((addon) => ({
+          id: safeString(addon?.id, 80),
+          name: safeString(addon?.name, 120),
+          duration: Number.isFinite(Number(addon?.duration)) ? Number(addon.duration) : 0,
+          price: Number.isFinite(Number(addon?.price)) ? Number(addon.price) : 0
+        })).filter((addon) => addon.id && addon.name)
+      : [];
+    const normalizedTotalDuration = Number.isFinite(Number(totalDuration)) ? Number(totalDuration) : null;
+    const normalizedTotalPrice = Number.isFinite(Number(totalPrice)) ? Number(totalPrice) : null;
 
     const id = uuidv4();
     const newAppointment = {
@@ -82,8 +101,14 @@ router.post('/', async (req, res) => {
       phone: normalizedPhone,
       service: normalizedService,
       service_name: normalizedServiceName,
+      service_duration: normalizedServiceDuration,
+      service_price: normalizedServicePrice,
       addons: normalizedAddons,
       addon_names: normalizedAddonNames,
+      addon_details: normalizedAddonDetails,
+      total_duration: normalizedTotalDuration,
+      total_price: normalizedTotalPrice,
+      language: normalizedLanguage,
       date: normalizedDate,
       time: normalizedTime,
       notes: normalizedNotes,
@@ -99,7 +124,13 @@ router.post('/', async (req, res) => {
         customerName: normalizedCustomerName,
         email: normalizedEmail,
         service: normalizedServiceName,
+        serviceDuration: normalizedServiceDuration,
+        servicePrice: normalizedServicePrice,
         addons: normalizedAddonNames,
+        addonDetails: normalizedAddonDetails,
+        totalDuration: normalizedTotalDuration,
+        totalPrice: normalizedTotalPrice,
+        language: normalizedLanguage,
         date: normalizedDate,
         time: normalizedTime
       });

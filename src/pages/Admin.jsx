@@ -7,21 +7,6 @@ import { SERVICES, ADDONS, formatTime } from '../services/appointmentService'
 import { useLanguage } from '../i18n/LanguageContext'
 import { getTranslation } from '../i18n/translations'
 
-// Simple password hashing for demo purposes
-const hashPassword = (pwd) => {
-  let hash = 0
-  for (let i = 0; i < pwd.length; i++) {
-    const char = pwd.charCodeAt(i)
-    hash = ((hash << 5) - hash) + char
-    hash = hash & hash
-  }
-  return hash.toString(36)
-}
-
-// Admin credentials (hashed)
-const ADMIN_USER = import.meta.env.VITE_ADMIN_USER || 'admin'
-const ADMIN_PASS_HASH = hashPassword(import.meta.env.VITE_ADMIN_PASSWORD || 'ChangeThisAdminPassword123!')
-
 const Admin = () => {
   const { bookings, removeBooking, loadBookings } = useBookingStore()
   const { language } = useLanguage()
@@ -29,9 +14,11 @@ const Admin = () => {
   
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [selectedDate, setSelectedDate] = useState(new Date())
   const [loginError, setLoginError] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
 
   // Reload bookings from backend when admin page mounts or when authenticated
   useEffect(() => {
@@ -40,16 +27,37 @@ const Admin = () => {
     }
   }, [isAuthenticated, loadBookings])
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault()
     setLoginError('')
+    setIsLoading(true)
     
-    if (username === ADMIN_USER && hashPassword(password) === ADMIN_PASS_HASH) {
-      setIsAuthenticated(true)
-      setUsername('')
-      setPassword('')
-    } else {
-      setLoginError('Invalid username or password')
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: username.trim(),
+          password,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        setIsAuthenticated(true)
+        setUsername('')
+        setPassword('')
+      } else {
+        setLoginError(data.message || 'Invalid username or password')
+      }
+    } catch (error) {
+      console.error('Login error:', error)
+      setLoginError('Network error. Please try again.')
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -117,9 +125,11 @@ const Admin = () => {
           className="bg-white p-8 rounded-sm shadow-lg max-w-md w-full"
         >
           <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-primary rounded-sm flex items-center justify-center mx-auto mb-4">
-              <span className="text-white font-display text-3xl">S</span>
-            </div>
+            <img
+              src="/images/logos/UNUSUAL STILLY BARB BLACK.png"
+              alt="Unusual Stilly Barb"
+              className="mx-auto mb-4 h-16 w-auto object-contain"
+            />
             <h1 className="text-2xl font-bold">Admin Panel</h1>
             <p className="text-neutral-600 mt-2">Enter your credentials</p>
           </div>
@@ -140,7 +150,8 @@ const Admin = () => {
                 id="username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                className="w-full px-4 py-3 border border-neutral-300 rounded-sm focus:outline-none focus:border-accent-gold"
+                disabled={isLoading}
+                className="w-full px-4 py-3 border border-neutral-300 rounded-sm focus:outline-none focus:border-accent-gold disabled:bg-neutral-100"
                 placeholder="Enter username"
               />
             </div>
@@ -149,18 +160,39 @@ const Admin = () => {
               <label htmlFor="password" className="block text-sm font-medium mb-2">
                 Password
               </label>
-              <input
-                type="password"
-                id="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 border border-neutral-300 rounded-sm focus:outline-none focus:border-accent-gold"
-                placeholder="Enter password"
-              />
+              <div className="relative">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  id="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  disabled={isLoading}
+                  className="w-full px-4 py-3 border border-neutral-300 rounded-sm focus:outline-none focus:border-accent-gold disabled:bg-neutral-100 pr-12"
+                  placeholder="Enter password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-neutral-600 hover:text-neutral-900 focus:outline-none"
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                >
+                  {showPassword ? (
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                  ) : (
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-4.803m5.596-3.856a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3l18 18" />
+                    </svg>
+                  )}
+                </button>
+              </div>
             </div>
             
-            <button type="submit" className="btn-primary w-full">
-              Login
+            <button type="submit" disabled={isLoading} className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed">
+              {isLoading ? 'Authenticating...' : 'Login'}
             </button>
             
             <Link to="/" className="block text-center text-sm text-neutral-600 hover:text-accent-gold">
@@ -179,8 +211,12 @@ const Admin = () => {
         <div className="container-custom">
           <div className="flex items-center justify-between h-20">
             <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-primary rounded-sm flex items-center justify-center">
-                <span className="text-white font-display text-2xl">S</span>
+              <div className="w-14 h-14 bg-white rounded-sm flex items-center justify-center overflow-hidden border border-neutral-200">
+                <img
+                  src="/images/logos/UNUSUAL STILLY BARB BLACK.png"
+                  alt="Unusual Stilly Barb"
+                  className="w-full h-full object-contain p-1.5"
+                />
               </div>
               <span className="font-display text-2xl font-bold">Admin Panel</span>
             </div>

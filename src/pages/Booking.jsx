@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import Header from '../components/Header'
 import { motion, AnimatePresence } from 'framer-motion'
 import { format, addDays, isSameDay } from 'date-fns'
 import { SERVICES, ADDONS, generateTimeSlots, isValidBookingDate, formatTime } from '../services/appointmentService'
@@ -13,6 +14,32 @@ const Booking = () => {
   const { addBooking, getBookingsByDate } = useBookingStore()
   const { language } = useLanguage()
   const t = (key) => getTranslation(language, key)
+  const topRef = useRef(null)
+  
+  // Scroll to top when component mounts
+  useEffect(() => {
+    // Use a small delay to ensure page is fully rendered
+    const scrollTimer = setTimeout(() => {
+      if (topRef.current) {
+        topRef.current.scrollIntoView({ behavior: 'auto', block: 'start' })
+      }
+    }, 50)
+    
+    return () => clearTimeout(scrollTimer)
+  }, [])
+  
+  // Detect mobile viewport (match Tailwind's md breakpoint)
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 767px)')
+    const update = () => setIsMobile(mq.matches)
+    update()
+    if (mq.addEventListener) mq.addEventListener('change', update)
+    else mq.addListener(update)
+    return () => {
+      if (mq.removeEventListener) mq.removeEventListener('change', update)
+      else mq.removeListener(update)
+    }
+  }, [])
   
   const [formData, setFormData] = useState({
     name: '',
@@ -27,6 +54,11 @@ const Booking = () => {
   
   const [selectedDate, setSelectedDate] = useState(null)
   const [availableSlots, setAvailableSlots] = useState([])
+  const [isMobile, setIsMobile] = useState(false)
+  const [showDatePicker, setShowDatePicker] = useState(false)
+  const [showTimePicker, setShowTimePicker] = useState(false)
+  const [chosenDateLabel, setChosenDateLabel] = useState('')
+  const [chosenTimeLabel, setChosenTimeLabel] = useState('')
 
   // Calculate total duration based on service + addons
   const calculateTotalDuration = () => {
@@ -70,16 +102,26 @@ const Booking = () => {
     const dateString = format(date, 'yyyy-MM-dd')
     setSelectedDate(date)
     setFormData({ ...formData, date: dateString, time: '' })
-    
+    setChosenDateLabel(format(date, 'PPP'))
+    setChosenTimeLabel('')
+
     // Get existing bookings for this date
     const existingBookings = getBookingsByDate(dateString)
     const totalDuration = calculateTotalDuration()
     const slots = generateTimeSlots(dateString, existingBookings, totalDuration)
     setAvailableSlots(slots)
+
+    if (isMobile) {
+      // close mobile calendar after selection and reveal time button
+      setShowDatePicker(false)
+      setShowTimePicker(false)
+    }
   }
 
   const handleTimeSelect = (time) => {
     setFormData({ ...formData, time })
+    setChosenTimeLabel(formatTime(time))
+    if (isMobile) setShowTimePicker(false)
   }
 
   const handleServiceChange = (e) => {
@@ -148,15 +190,37 @@ const Booking = () => {
     analytics.trackBooking(formData.service, formData.date)
 
     const selectedService = SERVICES.find(s => s.id === formData.service)
-    const selectedAddonNames = (formData.addons || [])
-      .map(addonId => ADDONS.find(a => a.id === addonId)?.name)
+    const selectedAddonDetails = (formData.addons || [])
+      .map(addonId => {
+        const addon = ADDONS.find(a => a.id === addonId)
+        if (!addon) return null
+
+        return {
+          id: addon.id,
+          name: addon.name,
+          duration: addon.displayDuration ?? addon.duration ?? 0,
+          price: addon.price || 0
+        }
+      })
       .filter(Boolean)
+
+    const selectedAddonNames = selectedAddonDetails.map(addon => addon.name)
+    const selectedServiceDuration = selectedService?.duration || 0
+    const selectedServicePrice = selectedService?.price || 0
+    const totalDuration = selectedServiceDuration + selectedAddonDetails.reduce((sum, addon) => sum + addon.duration, 0)
+    const totalPrice = selectedServicePrice + selectedAddonDetails.reduce((sum, addon) => sum + addon.price, 0)
     
     // Add booking via API
     const result = await addBooking({
       ...formData,
       serviceName: selectedService?.name,
-      addonNames: selectedAddonNames
+      serviceDuration: selectedServiceDuration,
+      servicePrice: selectedServicePrice,
+      addonNames: selectedAddonNames,
+      addonDetails: selectedAddonDetails,
+      totalDuration,
+      totalPrice,
+      language
     })
     
     if (!result.success) {
@@ -176,23 +240,8 @@ const Booking = () => {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-50">
-      {/* Header */}
-      <header className="bg-white border-b">
-        <div className="container-custom">
-          <div className="flex items-center justify-between h-20">
-            <Link to="/" className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-primary rounded-sm flex items-center justify-center">
-                <span className="text-white font-display text-2xl">S</span>
-              </div>
-              <span className="font-display text-2xl font-bold">stilly.barb</span>
-            </Link>
-            <Link to="/" className="text-sm font-medium hover:text-accent-gold transition-colors">
-              {t('backToHome')}
-            </Link>
-          </div>
-        </div>
-      </header>
+    <div ref={topRef} className="min-h-screen bg-neutral-50 pt-28 sm:pt-24">
+      <Header />
 
       {/* Booking Form */}
       <section className="py-16">
@@ -265,11 +314,11 @@ const Booking = () => {
               {/* Service Selection */}
               <div>
                 <h2 className="text-2xl font-semibold mb-6">{t('selectService')}</h2>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   {SERVICES.map((service) => (
                     <label
                       key={service.id}
-                      className={`relative border-2 rounded-sm p-4 cursor-pointer transition-all ${
+                      className={`relative border-2 rounded-sm p-3.5 sm:p-4 cursor-pointer transition-all ${
                         formData.service === service.id
                           ? 'border-accent-gold bg-accent-gold/5'
                           : 'border-neutral-300 hover:border-accent-gold/50'
@@ -283,10 +332,10 @@ const Booking = () => {
                         onChange={handleServiceChange}
                         className="sr-only"
                       />
-                      <div className="flex flex-col items-center text-center">
-                        <h3 className="font-semibold text-lg mb-2">{service.name}</h3>
-                        <p className="text-sm text-neutral-600 mb-2">{service.duration} min</p>
-                        <span className="text-xl font-bold text-accent-gold">€{service.price}</span>
+                      <div className="flex flex-col items-center text-center gap-1">
+                        <h3 className="font-semibold text-base sm:text-lg leading-snug">{service.name}</h3>
+                        <p className="text-xs sm:text-sm text-neutral-600">{service.duration} min</p>
+                        <span className="text-lg sm:text-xl font-bold text-accent-gold">€{service.price}</span>
                       </div>
                     </label>
                   ))}
@@ -297,7 +346,7 @@ const Booking = () => {
               <div>
                 <h2 className="text-2xl font-semibold mb-6">{t('addons')}</h2>
                 <p className="text-neutral-600 mb-6">{t('addonsDescription')}</p>
-                <div className="space-y-4">
+                <div className="space-y-3">
                   {ADDONS.map((addon) => {
                     // Disable beard addon if Beard service is selected
                     const isDisabled = addon.id === 'beard-addon' && formData.service === 'beard'
@@ -306,7 +355,7 @@ const Booking = () => {
                     return (
                       <label
                         key={addon.id}
-                        className={`flex items-center justify-between p-6 bg-white border-2 rounded-sm transition-all ${
+                        className={`flex items-center justify-between p-4 sm:p-5 bg-white border-2 rounded-sm transition-all ${
                           isDisabled 
                             ? 'border-neutral-200 bg-neutral-50 cursor-not-allowed opacity-50' 
                             : isChecked
@@ -314,9 +363,9 @@ const Booking = () => {
                             : 'border-neutral-300 cursor-pointer hover:border-accent-gold/50 hover:shadow-sm'
                         }`}
                       >
-                        <div className="flex items-center space-x-4">
+                        <div className="flex items-start space-x-3 flex-1">
                           {/* Custom Checkbox */}
-                          <div className="relative">
+                          <div className="relative flex-shrink-0 mt-0.5">
                             <input
                               type="checkbox"
                               checked={isChecked}
@@ -324,7 +373,7 @@ const Booking = () => {
                               disabled={isDisabled}
                               className="sr-only"
                             />
-                            <div className={`w-6 h-6 rounded border-2 transition-all duration-300 ${
+                            <div className={`w-5 h-5 sm:w-6 sm:h-6 rounded border-2 transition-all duration-300 ${
                               isChecked
                                 ? 'bg-accent-gold border-accent-gold'
                                 : 'bg-white border-neutral-300'
@@ -344,14 +393,16 @@ const Booking = () => {
                               )}
                             </div>
                           </div>
-                          <div>
-                            <h3 className="font-semibold text-lg">{addon.name}</h3>
-                            <p className="text-sm text-neutral-600">
-                              {addon.displayDuration || addon.duration} min
+                          <div className="flex-1">
+                            <h3 className="font-semibold text-base sm:text-lg leading-snug">{addon.name}</h3>
+                            <p className="text-xs sm:text-sm text-neutral-600">
+                              {(addon.displayDuration || addon.duration) > 0
+                                ? `${addon.displayDuration || addon.duration} min`
+                                : t('noExtraTime')}
                             </p>
                           </div>
                         </div>
-                        <span className="text-lg font-bold text-accent-gold">+€{addon.price}</span>
+                        <span className="text-base sm:text-lg font-bold text-accent-gold ml-3 flex-shrink-0">+€{addon.price}</span>
                       </label>
                     )
                   })}
@@ -382,7 +433,8 @@ const Booking = () => {
               </div>
 
               {/* Date Selection */}
-              <div>
+              {/* Desktop: keep existing grid */}
+              <div className="hidden md:block">
                 <h2 className="text-2xl font-semibold mb-6">{t('selectDate')}</h2>
                 <div className="grid grid-cols-4 md:grid-cols-7 gap-2">
                   {generateDates().map((date) => (
@@ -404,12 +456,144 @@ const Booking = () => {
                 </div>
               </div>
 
-              {/* Time Selection */}
+              {/* Mobile: buttons that toggle pickers */}
+              <div className="md:hidden space-y-4">
+                {/* Date Section */}
+                <div>
+                  <h2 className="text-2xl font-semibold mb-4">{t('selectDate')}</h2>
+                  <div className="space-y-2">
+                    {chosenDateLabel ? (
+                      <div className="flex items-center justify-between bg-white p-3 rounded-sm border">
+                        <div className="text-base font-semibold text-neutral-900">{chosenDateLabel}</div>
+                        <button
+                          type="button"
+                          className="text-sm text-accent-gold hover:underline ml-2 flex-shrink-0"
+                          onClick={() => setShowDatePicker(true)}
+                        >
+                          {t('selectDate')}
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => { setShowDatePicker(true); setShowTimePicker(false) }}
+                        className="w-full py-3 bg-white border rounded-sm text-left px-4 font-semibold"
+                      >
+                        {t('selectDate')}
+                      </button>
+                    )}
+
+                    <AnimatePresence>
+                      {showDatePicker && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: 'auto' }}
+                          exit={{ opacity: 0, height: 0 }}
+                          transition={{ duration: 0.25 }}
+                          className="overflow-y-auto overflow-x-hidden max-h-96 bg-white p-4 rounded-sm border w-full"
+                        >
+                          <div className="grid grid-cols-5 gap-3">
+                            {generateDates().map((date) => (
+                              <button
+                                key={date.toISOString()}
+                                type="button"
+                                onClick={() => { handleDateSelect(date) }}
+                                className={`min-w-0 h-16 px-1 py-2 rounded-sm text-center flex flex-col items-center justify-center leading-tight ${
+                                  selectedDate && isSameDay(date, selectedDate)
+                                    ? 'bg-accent-gold text-white'
+                                    : 'bg-white border'
+                                }`}
+                              >
+                                <div className="font-bold text-base">{format(date, 'd')}</div>
+                                <div className={`text-xs ${
+                                  selectedDate && isSameDay(date, selectedDate)
+                                    ? 'text-white'
+                                    : 'text-neutral-500'
+                                }`}>{format(date, 'EEE')}</div>
+                              </button>
+                            ))}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                </div>
+
+                {/* Time button & picker (mobile) - separate from date section */}
+                <AnimatePresence>
+                  {chosenDateLabel && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <div className="space-y-2">
+                        {chosenTimeLabel ? (
+                          <div className="flex items-center justify-between bg-white p-3 rounded-sm border">
+                            <div className="text-base font-semibold text-neutral-900">{chosenTimeLabel}</div>
+                            <button
+                              type="button"
+                              className="text-sm text-accent-gold hover:underline ml-2 flex-shrink-0"
+                              onClick={() => setShowTimePicker(true)}
+                            >
+                              {t('selectTime')}
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => { setShowTimePicker(true); setShowDatePicker(false) }}
+                            className="w-full py-3 bg-white border rounded-sm text-left px-4 font-semibold"
+                          >
+                            {t('selectTime')}
+                          </button>
+                        )}
+
+                        <AnimatePresence>
+                          {showTimePicker && (
+                            <motion.div
+                              initial={{ opacity: 0, height: 0 }}
+                              animate={{ opacity: 1, height: 'auto' }}
+                              exit={{ opacity: 0, height: 0 }}
+                              transition={{ duration: 0.25 }}
+                              className="overflow-y-auto overflow-x-hidden max-h-96 bg-white p-4 rounded-sm border w-full"
+                            >
+                              <div className="grid grid-cols-3 gap-3">
+                                {availableSlots.map((slot) => (
+                                  <button
+                                    key={slot.time}
+                                    type="button"
+                                    onClick={() => { handleTimeSelect(slot.time) }}
+                                    disabled={!slot.available}
+                                    className={`min-w-0 h-12 px-1 rounded-sm text-xs font-medium whitespace-nowrap flex items-center justify-center text-center ${
+                                      formData.time === slot.time
+                                        ? 'bg-accent-gold text-white'
+                                        : slot.available
+                                        ? 'bg-white border'
+                                        : 'bg-neutral-100 text-neutral-400'
+                                    }`}
+                                  >
+                                    {formatTime(slot.time)}
+                                  </button>
+                                ))}
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              {/* Time Selection (Desktop only) */}
               {selectedDate && (
                 <motion.div
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
                   transition={{ duration: 0.3 }}
+                  className="hidden md:block"
                 >
                   <h2 className="text-2xl font-semibold mb-6">{t('selectTime')}</h2>
                   <div className="grid grid-cols-3 md:grid-cols-5 gap-3">
