@@ -12,7 +12,7 @@ const Hero = () => {
       {/* Background Video/Image */}
       <div className="absolute inset-0 opacity-60">
         <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/50 z-10" />
-        <img src={`${import.meta.env.VITE_API_URL}/images/background-image-mainpage/Unusual-8.jpg`} alt="Hero background" className="w-full h-full object-cover" />
+        <img src={`${import.meta.env.VITE_API_BASE_URL}/images/background-image-mainpage/Unusual-8.jpg`} alt="Hero background" className="w-full h-full object-cover" />
       </div>
 
       {/* Content */}
