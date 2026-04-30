@@ -59,7 +59,24 @@ app.use(apiLimiter);
 app.use(express.json({ limit: '20kb' }));
 
 // Serve static images from backend/images
-app.use('/images', express.static(path.join(__dirname, 'images')));
+// Allow cross-origin loading for images so frontend on a different port can display them
+app.use(
+  '/images',
+  (req, res, next) => {
+    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+    next();
+  },
+  express.static(path.join(__dirname, 'images'))
+);
+// Also serve images at /api/images for frontend compatibility
+app.use(
+  '/api/images',
+  (req, res, next) => {
+    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+    next();
+  },
+  express.static(path.join(__dirname, 'images'))
+);
 
 // Routes
 app.use('/api/auth', authRouter);
