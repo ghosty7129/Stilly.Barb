@@ -70,6 +70,11 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', message: 'Backend server is running' });
 });
 
+// Root
+app.get('/', (req, res) => {
+  res.redirect('/api/health');
+});
+
 app.use((req, res) => {
   res.status(404).json({ error: 'Not found' });
 });
