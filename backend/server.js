@@ -58,8 +58,8 @@ app.use(cors(corsOptions));
 app.use(apiLimiter);
 app.use(express.json({ limit: '20kb' }));
 
-// Serve static images from backend
-app.use('/images', express.static(path.join(__dirname, '../images')));
+// Serve static images from backend/images
+app.use('/images', express.static(path.join(__dirname, 'images')));
 
 // Routes
 app.use('/api/auth', authRouter);

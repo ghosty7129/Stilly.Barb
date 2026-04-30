@@ -10,6 +10,7 @@ const Header = () => {
   const location = useLocation()
   const { language } = useLanguage()
   const t = (key) => getTranslation(language, key)
+  const apiUrl = import.meta.env.VITE_API_URL
 
   useEffect(() => {
     const handleScroll = () => {
@@ -53,7 +54,7 @@ const Header = () => {
           {/* Logo */}
           <Link to="/" className="flex items-center group">
             <img
-              src="/images/logos/UNUSUAL STILLY BARB TRANSPARENT DESIGN 2.png"
+              src={`${apiUrl}/images/logos/UNUSUAL STILLY BARB TRANSPARENT DESIGN 2.png`}
               alt={t('brandName')}
               className="h-14 sm:h-16 w-auto max-w-[150px] object-contain transition-transform group-hover:scale-105"
             />
