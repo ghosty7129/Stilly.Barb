@@ -3,6 +3,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
+import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import appointmentsRouter from './routes/appointments.js';
@@ -56,6 +57,9 @@ app.use(helmet());
 app.use(cors(corsOptions));
 app.use(apiLimiter);
 app.use(express.json({ limit: '20kb' }));
+
+// Serve static images from backend
+app.use('/images', express.static(path.join(__dirname, '../images')));
 
 // Routes
 app.use('/api/auth', authRouter);

@@ -54,7 +54,7 @@ const About = () => {
           >
             <div className="aspect-[4/5] bg-neutral-200 rounded-sm overflow-hidden">
               <img
-                src="/images/information-image/Unusual-4.jpg"
+                src={`${import.meta.env.VITE_API_URL}/images/information-image/Unusual-4.jpg`}
                 alt="Barbershop interior"
                 className="w-full h-full object-cover"
               />

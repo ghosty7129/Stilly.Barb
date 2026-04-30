@@ -7,45 +7,46 @@ const Gallery = () => {
   const [selectedImage, setSelectedImage] = useState(null)
   const { language } = useLanguage()
   const t = (key) => getTranslation(language, key)
+  const apiUrl = import.meta.env.VITE_API_URL
 
   const images = [
     {
       id: 1,
-      url: '/images/gallery_images/IMG_0086.JPG',
+      url: `${apiUrl}/images/gallery_images/IMG_0086.JPG`,
       alt: 'Burst fade',
       focalPosition: '50% 45%'
 
     },
     {
       id: 2,
-      url: '/images/gallery_images/IMG_0007.JPEG',
+      url: `${apiUrl}/images/gallery_images/IMG_0007.JPEG`,
       alt: 'Buzzcut',
       focalPosition: '50% 70%'
 
     },
     {
       id: 3,
-      url: '/images/gallery_images/IMG_0044.JPEG',
+      url: `${apiUrl}/images/gallery_images/IMG_0044.JPEG`,
       alt: 'Flow hairstyle',
       focalPosition: '50% 80%'
 
     },
     {
       id: 4,
-      url: '/images/gallery_images/IMG_0087.PNG',
+      url: `${apiUrl}/images/gallery_images/IMG_0087.PNG`,
       alt: 'Beard trim',
       focalPosition: '50% 50%'
 
     },
     {
       id: 5,
-      url: '/images/gallery_images/IMG_0034.JPEG',
+      url: `${apiUrl}/images/gallery_images/IMG_0034.JPEG`,
       alt: 'Buzzcut',
       focalPosition: '50% -10%'
     },
     {
       id: 6,
-      url: '/images/gallery_images/IMG_0088.PNG',
+      url: `${apiUrl}/images/gallery_images/IMG_0088.PNG`,
       alt: 'Beard trim',
       focalPosition: '50% 45%'
 

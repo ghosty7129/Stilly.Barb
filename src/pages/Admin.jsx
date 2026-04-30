@@ -11,6 +11,7 @@ const Admin = () => {
   const { bookings, removeBooking, loadBookings } = useBookingStore()
   const { language } = useLanguage()
   const t = (key) => getTranslation(language, key)
+  const apiUrl = import.meta.env.VITE_API_URL
   
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
@@ -126,7 +127,7 @@ const Admin = () => {
         >
           <div className="text-center mb-8">
             <img
-              src="/images/logos/UNUSUAL STILLY BARB BLACK.png"
+              src={`${apiUrl}/images/logos/UNUSUAL STILLY BARB BLACK.png`}
               alt="Unusual Stilly Barb"
               className="mx-auto mb-4 h-16 w-auto object-contain"
             />
@@ -213,7 +214,7 @@ const Admin = () => {
             <div className="flex items-center space-x-3">
               <div className="w-14 h-14 bg-white rounded-sm flex items-center justify-center overflow-hidden border border-neutral-200">
                 <img
-                  src="/images/logos/UNUSUAL STILLY BARB BLACK.png"
+                  src={`${apiUrl}/images/logos/UNUSUAL STILLY BARB BLACK.png`}
                   alt="Unusual Stilly Barb"
                   className="w-full h-full object-contain p-1.5"
                 />
