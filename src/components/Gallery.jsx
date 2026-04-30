@@ -7,7 +7,7 @@ const Gallery = () => {
   const [selectedImage, setSelectedImage] = useState(null)
   const { language } = useLanguage()
   const t = (key) => getTranslation(language, key)
-  const apiUrl = import.meta.env.VITE_API_URL
+  const apiUrl = import.meta.env.VITE_API_BASE_URL
 
   const images = [
     {
