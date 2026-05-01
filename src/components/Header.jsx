@@ -100,22 +100,22 @@ const Header = () => {
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               aria-label={isMenuOpen ? 'Close menu' : 'Open menu'}
               aria-expanded={isMenuOpen}
-              className="relative w-10 h-10 -mr-1 rounded-sm bg-white/25 border border-white/20"
+              className="relative w-10 h-10 -mr-1 rounded-sm bg-white/25 border border-white/20 flex items-center justify-center"
             >
               <motion.span
-                animate={isMenuOpen ? { y: 0, rotate: 45 } : { y: -8, rotate: 0 }}
+                animate={isMenuOpen ? { y: 0, rotate: 45 } : { y: -10, rotate: 0 }}
                 transition={{ duration: 0.3, ease: 'easeInOut' }}
-                className="absolute left-1/2 top-1/2 h-[2px] w-6 -translate-x-1/2 bg-neutral-100"
+                className="absolute h-[2px] w-6 bg-neutral-100"
               />
               <motion.span
                 animate={isMenuOpen ? { opacity: 0 } : { opacity: 1 }}
                 transition={{ duration: 0.3, ease: 'easeInOut' }}
-                className="absolute left-1/2 top-1/2 h-[2px] w-6 -translate-x-1/2 bg-neutral-100"
+                className="absolute h-[2px] w-6 bg-neutral-100"
               />
               <motion.span
-                animate={isMenuOpen ? { y: 0, rotate: -45 } : { y: 8, rotate: 0 }}
+                animate={isMenuOpen ? { y: 0, rotate: -45 } : { y: 10, rotate: 0 }}
                 transition={{ duration: 0.3, ease: 'easeInOut' }}
-                className="absolute left-1/2 top-1/2 h-[2px] w-6 -translate-x-1/2 bg-neutral-100"
+                className="absolute h-[2px] w-6 bg-neutral-100"
               />
             </button>
           </div>
