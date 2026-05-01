@@ -102,14 +102,20 @@ const Header = () => {
               aria-expanded={isMenuOpen}
               className="relative w-10 h-10 -mr-1 rounded-sm bg-white/25 border border-white/20"
             >
-              <span
-                className={`absolute left-1/2 top-1/2 h-[2px] w-6 -translate-x-1/2 bg-neutral-100 ${isMenuOpen ? 'translate-y-0 rotate-45' : '-translate-y-2'}`}
+              <motion.span
+                animate={isMenuOpen ? { y: 0, rotate: 45 } : { y: -8, rotate: 0 }}
+                transition={{ duration: 0.3, ease: 'easeInOut' }}
+                className="absolute left-1/2 top-1/2 h-[2px] w-6 -translate-x-1/2 bg-neutral-100"
               />
-              <span
-                className={`absolute left-1/2 top-1/2 h-[2px] w-6 -translate-x-1/2 bg-neutral-100 ${isMenuOpen ? 'opacity-0' : 'opacity-100'}`}
+              <motion.span
+                animate={isMenuOpen ? { opacity: 0 } : { opacity: 1 }}
+                transition={{ duration: 0.3, ease: 'easeInOut' }}
+                className="absolute left-1/2 top-1/2 h-[2px] w-6 -translate-x-1/2 bg-neutral-100"
               />
-              <span
-                className={`absolute left-1/2 top-1/2 h-[2px] w-6 -translate-x-1/2 bg-neutral-100 ${isMenuOpen ? 'translate-y-0 -rotate-45' : 'translate-y-2'}`}
+              <motion.span
+                animate={isMenuOpen ? { y: 0, rotate: -45 } : { y: 8, rotate: 0 }}
+                transition={{ duration: 0.3, ease: 'easeInOut' }}
+                className="absolute left-1/2 top-1/2 h-[2px] w-6 -translate-x-1/2 bg-neutral-100"
               />
             </button>
           </div>
@@ -120,10 +126,10 @@ const Header = () => {
       <AnimatePresence>
         {isMenuOpen && (
           <motion.div
-            initial={{ opacity: 0, y: -8 }}
+            initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.2, ease: 'easeOut' }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3, ease: 'easeOut' }}
             className="md:hidden bg-[rgba(128,126,126,0.92)] border-t border-neutral-300"
           >
             <nav className="container-custom py-6 flex flex-col space-y-4">
