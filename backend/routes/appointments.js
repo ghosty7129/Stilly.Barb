@@ -118,28 +118,29 @@ router.post('/', async (req, res) => {
 
     db.create(newAppointment);
 
-    // Send confirmation email
-    try {
-      await emailService.sendConfirmationEmail({
-        customerName: normalizedCustomerName,
-        phone: normalizedPhone,
-        email: normalizedEmail,
-        service: normalizedServiceName,
-        serviceDuration: normalizedServiceDuration,
-        servicePrice: normalizedServicePrice,
-        addons: normalizedAddonNames,
-        addonDetails: normalizedAddonDetails,
-        totalDuration: normalizedTotalDuration,
-        totalPrice: normalizedTotalPrice,
-        language: normalizedLanguage,
-        date: normalizedDate,
-        time: normalizedTime
-      });
-      console.log(`✅ Confirmation email sent to ${normalizedEmail}`);
-    } catch (emailError) {
-      console.error('Failed to send email:', emailError.message);
-      // Don't fail the request if email fails
-    }
+    // Send confirmation email in background — don't block the response
+    setImmediate(async () => {
+      try {
+        await emailService.sendConfirmationEmail({
+          customerName: normalizedCustomerName,
+          phone: normalizedPhone,
+          email: normalizedEmail,
+          service: normalizedServiceName,
+          serviceDuration: normalizedServiceDuration,
+          servicePrice: normalizedServicePrice,
+          addons: normalizedAddonNames,
+          addonDetails: normalizedAddonDetails,
+          totalDuration: normalizedTotalDuration,
+          totalPrice: normalizedTotalPrice,
+          language: normalizedLanguage,
+          date: normalizedDate,
+          time: normalizedTime
+        });
+        console.log(`✅ Confirmation email sent to ${normalizedEmail}`);
+      } catch (error) {
+        console.error('Background email error:', error.message);
+      }
+    });
 
     res.status(201).json(newAppointment);
   } catch (error) {
