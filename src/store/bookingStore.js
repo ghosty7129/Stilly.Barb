@@ -41,7 +41,7 @@ const useBookingStore = create((set, get) => ({
   },
   
   /**
-   * Add a new booking with validation for max 2 reservations per month
+   * Add a new booking with validation for max 1 reservation per week
    * @param {Object} booking - Booking object
    * @returns {Object} { success: boolean, message: string }
    */
@@ -49,21 +49,22 @@ const useBookingStore = create((set, get) => ({
     const state = get()
     const { name, phone, date } = booking
     
-    // Check for maximum 2 reservations per month
-    const bookingDate = new Date(date)
-    const currentMonth = bookingDate.getFullYear() * 12 + bookingDate.getMonth()
-    
-    const bookingsThisMonth = state.bookings.filter(b => {
+    // Check for maximum 1 reservation per week (7-day window) by phone number only
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const weekLater = new Date(today)
+    weekLater.setDate(today.getDate() + 7)
+
+    const bookingsThisWeek = state.bookings.filter(b => {
       const bDate = new Date(b.date)
-      const bMonth = bDate.getFullYear() * 12 + bDate.getMonth()
-      const bookingName = b.customer_name || b.name
-      return bMonth === currentMonth && bookingName === name && b.phone === phone
+      bDate.setHours(0, 0, 0, 0)
+      return bDate >= today && bDate < weekLater && b.phone === phone
     })
     
-    if (bookingsThisMonth.length >= 2) {
+    if (bookingsThisWeek.length >= 1) {
       return {
         success: false,
-        message: 'Maximum 2 reservations per month reached for this name and phone number'
+        message: 'Maximum 1 reservation per week for this phone number'
       }
     }
     
