@@ -1,5 +1,4 @@
 import nodemailer from 'nodemailer';
-import { Resend } from 'resend';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -80,7 +79,6 @@ class EmailService {
       process.env.EMAIL_USER !== 'your-email@gmail.com' &&
       process.env.EMAIL_PASSWORD !== 'your-app-password';
     
-    // Nodemailer transporter (Gmail) fallback
     if (this.enabled && this.isConfigured) {
       this.transporter = nodemailer.createTransport({
         service: 'gmail',
@@ -89,12 +87,6 @@ class EmailService {
           pass: process.env.EMAIL_PASSWORD
         }
       });
-    }
-
-    // Resend client (preferred when RESEND_API_KEY provided)
-    this.resendApiKey = process.env.RESEND_API_KEY || null;
-    if (this.enabled && this.resendApiKey) {
-      this.resend = new Resend(this.resendApiKey);
     }
   }
 
@@ -265,26 +257,6 @@ class EmailService {
       `
     };
 
-    // Try sending via Resend if configured, otherwise fallback to Nodemailer
-    const subject = mailOptions.subject;
-    const html = mailOptions.html;
-
-    if (this.resend) {
-      try {
-        await this.resend.emails.send({
-          from: process.env.EMAIL_FROM || process.env.EMAIL_USER || 'no-reply@stillybarb.com',
-          to: email,
-          subject,
-          html
-        });
-        console.log(`✅ Email sent (Resend) to ${email}`);
-        return;
-      } catch (resendError) {
-        console.error('Resend sending error, falling back to SMTP:', resendError);
-        // fall through to SMTP fallback
-      }
-    }
-
     if (this.transporter) {
       try {
         await this.transporter.sendMail(mailOptions);
@@ -294,7 +266,7 @@ class EmailService {
         throw error;
       }
     } else {
-      console.warn('No email provider configured (neither Resend nor SMTP).');
+      console.warn('No SMTP email provider configured.');
     }
   }
 }

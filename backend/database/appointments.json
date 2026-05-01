@@ -253,5 +253,82 @@
     "notes": "twts",
     "status": "pending",
     "created_at": "2026-05-01T07:54:16.031Z"
+  },
+  {
+    "id": "f4703c3c-f2e3-4b98-ad3b-369e9f4d7ffa",
+    "name": "Nikola Ivanov",
+    "customer_name": "Nikola Ivanov",
+    "email": "niko1bgvr@gmail.com",
+    "phone": "0886293125",
+    "service": "normal",
+    "service_name": "Подстрижка на Средна/Дълга коса",
+    "service_duration": 60,
+    "service_price": 15,
+    "addons": [
+      "beard-addon"
+    ],
+    "addon_names": [
+      "Оформяне на брада"
+    ],
+    "addon_details": [
+      {
+        "id": "beard-addon",
+        "name": "Оформяне на брада",
+        "duration": 30,
+        "price": 7
+      }
+    ],
+    "total_duration": 90,
+    "total_price": 22,
+    "language": "bg",
+    "date": "2026-05-06",
+    "time": "12:00",
+    "notes": "test",
+    "status": "pending",
+    "created_at": "2026-05-01T08:38:14.737Z"
+  },
+  {
+    "id": "69822b33-051d-44e7-ae76-ae3856b8998d",
+    "name": "Никола",
+    "customer_name": "Никола",
+    "email": "niko1bgvr@gmail.com",
+    "phone": "0812345678",
+    "service": "buzzcut",
+    "service_name": "Къса коса / Фейд",
+    "service_duration": 30,
+    "service_price": 12,
+    "addons": [],
+    "addon_names": [],
+    "addon_details": [],
+    "total_duration": 30,
+    "total_price": 12,
+    "language": "bg",
+    "date": "2026-05-06",
+    "time": "12:00",
+    "notes": "test",
+    "status": "pending",
+    "created_at": "2026-05-01T09:51:49.098Z"
+  },
+  {
+    "id": "f7d3e86e-9ccf-4ccd-9c66-055844548b82",
+    "name": "nikos",
+    "customer_name": "nikos",
+    "email": "niko1bgvr@gmail.com",
+    "phone": "0812345678",
+    "service": "buzzcut",
+    "service_name": "Къса коса / Фейд",
+    "service_duration": 30,
+    "service_price": 12,
+    "addons": [],
+    "addon_names": [],
+    "addon_details": [],
+    "total_duration": 30,
+    "total_price": 12,
+    "language": "bg",
+    "date": "2026-05-06",
+    "time": "16:00",
+    "notes": "test",
+    "status": "pending",
+    "created_at": "2026-05-01T09:52:45.189Z"
   }
 ]
