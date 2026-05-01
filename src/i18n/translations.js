@@ -72,7 +72,7 @@ export const translations = {
     confirmationMessage: 'Thank you for booking with us. We look forward to seeing you!',
     backToBooking: '← Book Another',
     dateTime: 'Date & Time',
-    confirmationEmailNote: 'A confirmation email has been sent to {email}. Please arrive 5 minutes early for your appointment.',
+    confirmationEmailNote: 'Please arrive 5 minutes early for your appointment.',
 
     // Admin
     adminPanel: 'Admin Panel',
@@ -190,7 +190,7 @@ export const translations = {
     confirmationMessage: 'Благoдaрим, че резервирахте час при нас. Ще се видим скоро!',
     backToBooking: '← Резервирайте друга',
     dateTime: 'Дата и час',
-    confirmationEmailNote: 'Потвърдителен имейл е изпратен до {email}. Моля, елате 5 минути по-рано за вашия час.',
+    confirmationEmailNote: 'Моля, елате 5 минути по-рано за вашия час.',
 
     // Admin
     adminPanel: 'Админ панел',

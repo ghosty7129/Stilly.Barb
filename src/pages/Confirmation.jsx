@@ -218,7 +218,7 @@ const Confirmation = () => {
             <div className="rounded-xl border border-blue-200 bg-blue-50 p-4">
               <p className="text-sm leading-relaxed text-blue-800">
                 <strong>{language === 'bg' ? 'Бележка:' : 'Note:'}</strong>{' '}
-                {t('confirmationEmailNote').replace('{email}', booking.email)}
+                {t('confirmationEmailNote')}
               </p>
             </div>
           </div>
