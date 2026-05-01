@@ -49,7 +49,7 @@ const Contact = () => {
           >
             <h2 className="section-title mb-6">{t('getInTouch')}</h2>
             <p className="section-subtitle mb-12">
-              {language === 'en' ? "Have questions? We'd love to hear from you. Send us a message and we'll respond as soon as possible." : 'Имате въпроси? Ще се радваме да чуем от вас. Изпратете ни съобщение и ще отговорим възможно скоро.'}
+              {language === 'en' ? "Have questions? We'd love to hear from you. Send us a message and we'll respond as soon as possible." : 'Имате въпроси? Изпратете ни съобщение и ще ви отговорим възможно най-скоро.'}
             </p>
 
             <div className="space-y-8">

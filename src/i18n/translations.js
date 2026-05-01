@@ -162,7 +162,7 @@ export const translations = {
     bookYourAppointment: 'Резервирайте вашия час',
     selectYourPreferences: 'Изберете предпочитаната услуга, дата и час',
     personalInformation: 'Лична информация',
-    fullName: 'Пълно име',
+    fullName: 'Иван Иванов',
     email: 'Имейл',
     phoneNumber: 'Телефонен номер',
     selectService: 'Услуги',

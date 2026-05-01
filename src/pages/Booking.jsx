@@ -186,6 +186,12 @@ const Booking = () => {
       return
     }
     
+    // Validate phone number is exactly 10 digits
+    if (formData.phone.length !== 10) {
+      alert('Phone number must be exactly 10 digits')
+      return
+    }
+    
     // Track analytics
     analytics.trackBooking(formData.service, formData.date)
 
@@ -235,9 +241,23 @@ const Booking = () => {
   }
 
   const handleChange = (e) => {
+    const { name, value } = e.target
+    
+    // Validate phone number - only allow digits and limit to 10
+    if (name === 'phone') {
+      const digitsOnly = value.replace(/\D/g, '')
+      if (digitsOnly.length <= 10) {
+        setFormData({
+          ...formData,
+          [name]: digitsOnly
+        })
+      }
+      return
+    }
+    
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [name]: value
     })
   }
 
@@ -265,7 +285,7 @@ const Booking = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label htmlFor="name" className="block text-sm font-medium mb-2">
-                      {t('fullName')} {t('requiredField')}
+                      Име и Фамилия
                     </label>
                     <input
                       type="text"
@@ -306,8 +326,9 @@ const Booking = () => {
                       value={formData.phone}
                       onChange={handleChange}
                       required
+                      maxLength="10"
                       className="w-full px-4 py-3 border border-neutral-300 rounded-sm focus:outline-none focus:border-accent-gold transition-colors"
-                      placeholder="+359 000-0000"
+                      placeholder="0886462500"
                     />
                   </div>
                 </div>
