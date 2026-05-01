@@ -45,13 +45,7 @@ const About = () => {
             </div>
           </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0, x: 50 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-            className="relative lg:col-start-2 lg:row-span-2"
-          >
+          <div className="relative lg:col-start-2 lg:row-span-2">
             <div className="aspect-[4/5] bg-neutral-200 rounded-sm overflow-hidden">
               <img
                 src={`${import.meta.env.VITE_API_URL}/images/information-image/Unusual-4.jpg`}
@@ -61,7 +55,7 @@ const About = () => {
             </div>
 
             <div className="absolute -bottom-6 -right-6 w-48 h-48 border-4 border-accent-gold rounded-sm -z-10" />
-          </motion.div>
+          </div>
 
           <motion.div
             initial={{ opacity: 0, x: -50 }}

@@ -111,5 +111,103 @@
     "notes": "ysy",
     "status": "pending",
     "created_at": "2026-04-29T20:07:08.763Z"
+  },
+  {
+    "id": "4732ff62-cbfa-4361-97f6-e8c58125dac6",
+    "name": "Nikola Ivanov",
+    "customer_name": "Nikola Ivanov",
+    "email": "niko1bgvr@gmail.com",
+    "phone": "0123456789",
+    "service": "normal",
+    "service_name": "Подстрижка на Средна/Дълга коса",
+    "service_duration": 60,
+    "service_price": 15,
+    "addons": [
+      "beard-addon",
+      "eyebrows",
+      "hair-wash"
+    ],
+    "addon_names": [
+      "Оформяне на брада",
+      "Оформяне на вежди",
+      "Измиване на коса"
+    ],
+    "addon_details": [
+      {
+        "id": "beard-addon",
+        "name": "Оформяне на брада",
+        "duration": 30,
+        "price": 7
+      },
+      {
+        "id": "eyebrows",
+        "name": "Оформяне на вежди",
+        "duration": 15,
+        "price": 3
+      },
+      {
+        "id": "hair-wash",
+        "name": "Измиване на коса",
+        "duration": 0,
+        "price": 2
+      }
+    ],
+    "total_duration": 105,
+    "total_price": 27,
+    "language": "bg",
+    "date": "2026-05-07",
+    "time": "13:00",
+    "notes": "test",
+    "status": "pending",
+    "created_at": "2026-05-01T06:38:47.044Z"
+  },
+  {
+    "id": "b8f4b810-a3b9-49a9-ade8-bcd89c85f0b9",
+    "name": "Nikola Ivanovg",
+    "customer_name": "Nikola Ivanovg",
+    "email": "niko1bgvr@gmail.com",
+    "phone": "0123456789",
+    "service": "normal",
+    "service_name": "Подстрижка на Средна/Дълга коса",
+    "service_duration": 60,
+    "service_price": 15,
+    "addons": [
+      "beard-addon",
+      "eyebrows",
+      "hair-wash"
+    ],
+    "addon_names": [
+      "Оформяне на брада",
+      "Оформяне на вежди",
+      "Измиване на коса"
+    ],
+    "addon_details": [
+      {
+        "id": "beard-addon",
+        "name": "Оформяне на брада",
+        "duration": 30,
+        "price": 7
+      },
+      {
+        "id": "eyebrows",
+        "name": "Оформяне на вежди",
+        "duration": 15,
+        "price": 3
+      },
+      {
+        "id": "hair-wash",
+        "name": "Измиване на коса",
+        "duration": 0,
+        "price": 2
+      }
+    ],
+    "total_duration": 105,
+    "total_price": 27,
+    "language": "bg",
+    "date": "2026-05-06",
+    "time": "10:00",
+    "notes": "test",
+    "status": "pending",
+    "created_at": "2026-05-01T06:41:29.249Z"
   }
 ]

@@ -228,8 +228,10 @@ const Booking = () => {
       return
     }
     
-    // Navigate to confirmation
-    navigate('/confirmation', { state: { booking: result.booking || formData } })
+    // Persist booking for the confirmation page, then force a full page load.
+    const confirmationBooking = result.booking || formData
+    sessionStorage.setItem('latestBooking', JSON.stringify(confirmationBooking))
+    window.location.assign('/confirmation')
   }
 
   const handleChange = (e) => {
