@@ -98,19 +98,18 @@ const Header = () => {
           <div className="md:hidden flex items-center">
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="w-10 h-10 flex flex-col items-center justify-center space-y-1.5 -mr-1 rounded-sm bg-white/25 border border-white/20"
+              aria-label={isMenuOpen ? 'Close menu' : 'Open menu'}
+              aria-expanded={isMenuOpen}
+              className="relative w-10 h-10 -mr-1 rounded-sm bg-white/25 border border-white/20"
             >
-              <motion.span
-                animate={isMenuOpen ? { rotate: 45, y: 6 } : { rotate: 0, y: 0 }}
-                className="w-6 h-0.5 bg-neutral-100 block transition-all"
+              <span
+                className={`absolute left-1/2 top-1/2 h-[2px] w-6 -translate-x-1/2 bg-neutral-100 transition-transform duration-[160ms] ease-out will-change-transform ${isMenuOpen ? 'translate-y-0 rotate-45' : '-translate-y-2'}`}
               />
-              <motion.span
-                animate={isMenuOpen ? { opacity: 0 } : { opacity: 1 }}
-                className="w-6 h-0.5 bg-neutral-100 block transition-all"
+              <span
+                className={`absolute left-1/2 top-1/2 h-[2px] w-6 -translate-x-1/2 bg-neutral-100 transition-opacity duration-[160ms] ease-out ${isMenuOpen ? 'opacity-0' : 'opacity-100'}`}
               />
-              <motion.span
-                animate={isMenuOpen ? { rotate: -45, y: -6 } : { rotate: 0, y: 0 }}
-                className="w-6 h-0.5 bg-neutral-100 block transition-all"
+              <span
+                className={`absolute left-1/2 top-1/2 h-[2px] w-6 -translate-x-1/2 bg-neutral-100 transition-transform duration-[160ms] ease-out will-change-transform ${isMenuOpen ? 'translate-y-0 -rotate-45' : 'translate-y-2'}`}
               />
             </button>
           </div>
@@ -121,10 +120,11 @@ const Header = () => {
       <AnimatePresence>
         {isMenuOpen && (
           <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className="md:hidden bg-[rgba(128,126,126,0.92)] border-t border-neutral-300 overflow-hidden"
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.2, ease: 'easeOut' }}
+            className="md:hidden bg-[rgba(128,126,126,0.92)] border-t border-neutral-300"
           >
             <nav className="container-custom py-6 flex flex-col space-y-4">
               <button

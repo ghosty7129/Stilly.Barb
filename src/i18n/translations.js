@@ -187,7 +187,7 @@ export const translations = {
     // Confirmation
     confirmationTitle: 'Вашата среща е потвърдена!',
     appointmentDetails: 'Детайли на срещата',
-    confirmationMessage: 'Благодарим, че резервирахте с нас. Ние се надяваме да се видим!',
+    confirmationMessage: 'Благoдaрим, че резервирахте час при нас. Ще се видим скоро!',
     backToBooking: '← Резервирайте друга',
     dateTime: 'Дата и час',
     confirmationEmailNote: 'Потвърдителен имейл е изпратен до {email}. Моля, елате 5 минути по-рано за вашия час.',

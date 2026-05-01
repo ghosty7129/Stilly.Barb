@@ -12,19 +12,26 @@ const escapeHtml = (value = '') => String(value)
 
 const formatMoney = (value) => {
   const number = Number(value || 0);
-  return `€${number.toFixed(2)}`;
+  return `€ ${number.toFixed(2)}`;
+};
+
+const capitalizeFirstLetter = (text, locale = 'en-US') => {
+  if (!text) return '';
+  return text.charAt(0).toLocaleUpperCase(locale) + text.slice(1);
 };
 
 const formatDateLabel = (date, language = 'bg') => {
   if (!date) return '';
 
-  const locale = language === 'bg' ? 'en-US' : 'en-US';
-  return new Intl.DateTimeFormat(locale, {
+  const locale = language === 'bg' ? 'bg-BG' : 'en-US';
+  const formatted = new Intl.DateTimeFormat(locale, {
     weekday: 'long',
     month: 'long',
     day: 'numeric',
     year: 'numeric'
   }).format(new Date(date));
+
+  return capitalizeFirstLetter(formatted, locale);
 };
 
 const getLabels = (language = 'bg') => {
@@ -48,7 +55,7 @@ const getLabels = (language = 'bg') => {
 
   return {
     title: 'Вашата среща е потвърдена!',
-    subtitle: 'Благодарим, че резервирахте с нас. Ние се надяваме да се видим!',
+    subtitle: 'Благодарим, че резервирахте час при нас. Ще се видим скоро!',
     details: 'Детайли на срещата',
     fullName: 'Пълно име',
     email: 'Имейл',
@@ -59,7 +66,7 @@ const getLabels = (language = 'bg') => {
     notes: 'Допълнителни бележки',
     totalPrice: 'Обща цена',
     confirmationNote: 'Бележка:',
-    confirmationEmailNote: (email) => `Потвърдителен имейл е изпратен до ${email}. Моля, елате 5 минути по-рано за вашия час.`
+    confirmationEmailNote: (email) => `Това е потвърдителен имейл изпратен до ${email}. Моля, елате 5 минути по-рано за вашия час.`
   };
 };
 
@@ -85,6 +92,7 @@ class EmailService {
 
   async sendConfirmationEmail({
     customerName,
+    phone = '',
     email,
     service,
     serviceDuration,
@@ -129,7 +137,7 @@ class EmailService {
     const safeEmail = escapeHtml(email);
     const safeService = escapeHtml(service);
     const safeNotes = escapeHtml(notes);
-    const totalDurationLabel = resolvedTotalDuration > 0 ? `${resolvedTotalDuration} min` : '';
+    const totalDurationLabel = resolvedTotalDuration > 0 ? `${resolvedTotalDuration} ${language === 'en' ? 'min' : 'мин'}` : '';
 
     const mailOptions = {
       from: process.env.EMAIL_USER,
@@ -144,26 +152,26 @@ class EmailService {
           <meta charset="UTF-8" />
           <meta name="viewport" content="width=device-width, initial-scale=1.0" />
           <style>
-            body { margin: 0; padding: 0; background: #f4f4f5; font-family: Arial, Helvetica, sans-serif; color: #111827; }
-            .wrapper { width: 100%; padding: 32px 16px; box-sizing: border-box; }
-            .card { max-width: 640px; margin: 0 auto; background: #ffffff; border: 1px solid #e5e7eb; box-shadow: 0 20px 45px rgba(0,0,0,0.12); }
-            .header { background: #8a8f99; color: #ffffff; text-align: center; padding: 40px 24px 28px; }
-            .check { width: 56px; height: 56px; border-radius: 999px; background: #ffffff; color: #6b7280; display: inline-block; line-height: 56px; font-size: 30px; font-weight: bold; margin-bottom: 16px; }
-            .title { margin: 0; font-size: 24px; line-height: 1.2; font-weight: 700; }
-            .subtitle { margin: 8px 0 0; font-size: 14px; line-height: 1.5; color: rgba(255,255,255,0.92); }
-            .content { padding: 24px 20px 28px; }
-            .section-title { margin: 0 0 16px; font-size: 20px; line-height: 1.25; font-weight: 700; color: #111827; }
-            .detail { display: flex; align-items: flex-start; gap: 12px; background: #f9fafb; border: 1px solid #eef0f3; padding: 12px; margin-bottom: 10px; }
-            .icon { width: 36px; height: 36px; flex: 0 0 36px; background: #eef2ff; color: #6b7280; text-align: center; line-height: 36px; font-size: 16px; }
-            .label { font-size: 11px; line-height: 1.2; color: #6b7280; margin-bottom: 2px; }
-            .value { font-size: 14px; line-height: 1.35; color: #111827; font-weight: 700; }
-            .subvalue { font-size: 12px; line-height: 1.4; color: #4b5563; margin-top: 2px; }
-            .total { margin-top: 14px; border: 1px solid #9ca3af; background: #e5e7eb; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; font-weight: 700; }
-            .total span:last-child { font-size: 18px; color: #6b7280; }
-            .note { margin-top: 18px; padding: 14px 16px; background: #eff6ff; border: 1px solid #bfdbfe; color: #1e3a8a; font-size: 12px; line-height: 1.5; }
+            body { margin: 0; padding: 0; background: #f3f4f6; font-family: "Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif; color: #0f172a; }
+            .wrapper { width: 100%; padding: 28px 12px; box-sizing: border-box; }
+            .card { max-width: 720px; margin: 0 auto; background: #ffffff; border: 1px solid #e6e9ee; border-radius: 16px; box-shadow: 0 20px 60px rgba(2,6,23,0.08); overflow: hidden; }
+            .header { background: #8a8f99; color: #ffffff; text-align: center; padding: 36px 20px 28px; }
+            .check { width: 56px; height: 56px; border-radius: 999px; background: #ffffff; color: #7b8794; display: inline-block; line-height: 56px; font-size: 28px; font-weight: 700; margin-bottom: 14px; }
+            .title { margin: 0; font-size: 22px; line-height: 1.2; font-weight: 800; letter-spacing: -0.2px; }
+            .subtitle { margin: 8px 0 0; font-size: 13px; line-height: 1.4; color: rgba(255,255,255,0.92); }
+            .content { padding: 22px 20px 28px; }
+            .section-title { margin: 0 0 14px; font-size: 18px; line-height: 1.25; font-weight: 800; color: #0f172a; }
+            .detail { display: block; background: #fbfbfc; border: 1px solid #eef2f6; padding: 12px; margin-bottom: 12px; border-radius: 12px; }
+            /* removed .icon placeholder to avoid empty white boxes in emails */
+            .label { font-size: 11px; line-height: 1.2; color: #6b7280; margin-bottom: 4px; }
+            .value { font-size: 15px; line-height: 1.35; color: #0f172a; font-weight: 700; }
+            .subvalue { font-size: 13px; line-height: 1.4; color: #475569; margin-top: 4px; }
+            .total { margin-top: 14px; border-radius: 10px; border: 1px solid #e6e9ee; background: #f8fafc; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; font-weight: 800; }
+            .total span:last-child { font-size: 18px; color: #7c3aed; }
+            .note { margin-top: 16px; padding: 12px 14px; background: #f1f5f9; border: 1px solid #e2e8f0; color: #0f172a; font-size: 13px; line-height: 1.4; border-radius: 10px; }
             .muted { color: #6b7280; font-size: 12px; }
             .spacer { height: 2px; }
-          </style>
+              </style>
         </head>
         <body>
           <div class="wrapper">
@@ -177,7 +185,6 @@ class EmailService {
                 <h2 class="section-title">${escapeHtml(labels.details)}</h2>
 
                 <div class="detail">
-                  <div class="icon">👤</div>
                   <div>
                     <div class="label">${escapeHtml(labels.fullName)}</div>
                     <div class="value">${safeName}</div>
@@ -185,7 +192,6 @@ class EmailService {
                 </div>
 
                 <div class="detail">
-                  <div class="icon">✉</div>
                   <div>
                     <div class="label">${escapeHtml(labels.email)}</div>
                     <div class="value">${safeEmail}</div>
@@ -193,7 +199,6 @@ class EmailService {
                 </div>
 
                 <div class="detail">
-                  <div class="icon">☎</div>
                   <div>
                     <div class="label">${escapeHtml(labels.phone)}</div>
                     <div class="value">${escapeHtml(phone)}</div>
@@ -201,17 +206,15 @@ class EmailService {
                 </div>
 
                 <div class="detail">
-                  <div class="icon">◌</div>
                   <div>
                     <div class="label">${escapeHtml(labels.service)}</div>
                     <div class="value">${safeService}</div>
-                    <div class="subvalue">${resolvedServiceDuration ? `${resolvedServiceDuration} minutes` : ''}${resolvedServiceDuration ? ' • ' : ''}${formatMoney(resolvedServicePrice)}</div>
+                    <div class="subvalue">${resolvedServiceDuration ? `${resolvedServiceDuration} ${language === 'en' ? 'minutes' : 'мин'}` : ''}${resolvedServiceDuration ? ' • ' : ''}${formatMoney(resolvedServicePrice)}</div>
                   </div>
                 </div>
 
                 ${normalizedAddons.length > 0 ? `
                 <div class="detail">
-                  <div class="icon">◌</div>
                   <div>
                     <div class="label">${escapeHtml(labels.addons)}</div>
                     <div class="value">${addonNames}</div>
@@ -220,7 +223,6 @@ class EmailService {
                 ` : ''}
 
                 <div class="detail" style="border: 1px solid #4b5563; background: #f3f4f6;">
-                  <div class="icon">🗓</div>
                   <div>
                     <div class="label">${escapeHtml(labels.dateTime)}</div>
                     <div class="value">${escapeHtml(formattedDate)}</div>
@@ -230,7 +232,6 @@ class EmailService {
 
                 ${safeNotes ? `
                 <div class="detail">
-                  <div class="icon">📝</div>
                   <div>
                     <div class="label">${escapeHtml(labels.notes)}</div>
                     <div class="value" style="font-weight: 600;">${safeNotes}</div>
@@ -239,7 +240,7 @@ class EmailService {
                 ` : ''}
 
                 <div class="total">
-                  <span>${escapeHtml(labels.totalPrice)}:</span>
+                  <span>${escapeHtml(labels.totalPrice)}:&nbsp;</span>
                   <span>${formatMoney(resolvedTotalPrice)}</span>
                 </div>
 

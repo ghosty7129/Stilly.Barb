@@ -122,6 +122,7 @@ router.post('/', async (req, res) => {
     try {
       await emailService.sendConfirmationEmail({
         customerName: normalizedCustomerName,
+        phone: normalizedPhone,
         email: normalizedEmail,
         service: normalizedServiceName,
         serviceDuration: normalizedServiceDuration,
