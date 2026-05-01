@@ -103,13 +103,13 @@ const Header = () => {
               className="relative w-10 h-10 -mr-1 rounded-sm bg-white/25 border border-white/20"
             >
               <span
-                className={`absolute left-1/2 top-1/2 h-[2px] w-6 -translate-x-1/2 bg-neutral-100 transition-transform duration-[160ms] ease-out will-change-transform ${isMenuOpen ? 'translate-y-0 rotate-45' : '-translate-y-2'}`}
+                className={`absolute left-1/2 top-1/2 h-[2px] w-6 -translate-x-1/2 bg-neutral-100 ${isMenuOpen ? 'translate-y-0 rotate-45' : '-translate-y-2'}`}
               />
               <span
-                className={`absolute left-1/2 top-1/2 h-[2px] w-6 -translate-x-1/2 bg-neutral-100 transition-opacity duration-[160ms] ease-out ${isMenuOpen ? 'opacity-0' : 'opacity-100'}`}
+                className={`absolute left-1/2 top-1/2 h-[2px] w-6 -translate-x-1/2 bg-neutral-100 ${isMenuOpen ? 'opacity-0' : 'opacity-100'}`}
               />
               <span
-                className={`absolute left-1/2 top-1/2 h-[2px] w-6 -translate-x-1/2 bg-neutral-100 transition-transform duration-[160ms] ease-out will-change-transform ${isMenuOpen ? 'translate-y-0 -rotate-45' : 'translate-y-2'}`}
+                className={`absolute left-1/2 top-1/2 h-[2px] w-6 -translate-x-1/2 bg-neutral-100 ${isMenuOpen ? 'translate-y-0 -rotate-45' : 'translate-y-2'}`}
               />
             </button>
           </div>
