@@ -1,10 +1,18 @@
 import emailService from '../services/emailService.js';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 (async function run() {
   try {
+    const target = process.env.TEST_EMAIL_RECIPIENT || process.env.EMAIL_USER || 'barbershopunusual@gmail.com';
+
+    console.log('Using RESEND_API_KEY:', !!process.env.RESEND_API_KEY);
+    console.log('Sending test email to:', target);
+
     await emailService.sendConfirmationEmail({
       customerName: 'Script Test',
-      email: process.env.EMAIL_USER || 'barbershopunusual@gmail.com',
+      email: target,
       phone: '0881234567',
       service: 'Automated Test Service',
       serviceDuration: 15,
@@ -16,13 +24,14 @@ import emailService from '../services/emailService.js';
       language: 'bg',
       date: new Date().toISOString(),
       time: '12:00',
-      notes: 'This is a test email sent from send-test-email.js'
+      notes: 'This is a test email sent from send-test-email.js (Resend test)'
     });
 
     console.log('✅ send-test-email: email send attempted.');
-    process.exit(0);
+    // Allow pending handles to close gracefully before exiting
+    setTimeout(() => process.exit(0), 200);
   } catch (err) {
     console.error('❌ send-test-email failed:', err && err.message ? err.message : err);
-    process.exit(1);
+    setTimeout(() => process.exit(1), 200);
   }
 })();
