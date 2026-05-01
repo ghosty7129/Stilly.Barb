@@ -1,4 +1,4 @@
-import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -73,20 +73,10 @@ const getLabels = (language = 'bg') => {
 class EmailService {
   constructor() {
     this.enabled = process.env.EMAIL_ENABLED === 'true';
-    this.isConfigured =
-      !!process.env.EMAIL_USER &&
-      !!process.env.EMAIL_PASSWORD &&
-      process.env.EMAIL_USER !== 'your-email@gmail.com' &&
-      process.env.EMAIL_PASSWORD !== 'your-app-password';
-    
+    this.isConfigured = !!process.env.RESEND_API_KEY;
+
     if (this.enabled && this.isConfigured) {
-      this.transporter = nodemailer.createTransport({
-        service: 'gmail',
-        auth: {
-          user: process.env.EMAIL_USER,
-          pass: process.env.EMAIL_PASSWORD
-        }
-      });
+      this.resend = new Resend(process.env.RESEND_API_KEY);
     }
   }
 
@@ -112,7 +102,7 @@ class EmailService {
     }
 
     if (!this.isConfigured) {
-      console.warn('📧 Email is enabled but SMTP credentials are placeholders. Set EMAIL_USER and EMAIL_PASSWORD in backend/.env');
+      console.warn('📧 Email is enabled but RESEND_API_KEY is not set. Add RESEND_API_KEY to backend/.env');
       return;
     }
 
@@ -139,13 +129,11 @@ class EmailService {
     const safeNotes = escapeHtml(notes);
     const totalDurationLabel = resolvedTotalDuration > 0 ? `${resolvedTotalDuration} ${language === 'en' ? 'min' : 'мин'}` : '';
 
-    const mailOptions = {
-      from: process.env.EMAIL_USER,
-      to: email,
-      subject: language === 'en'
-        ? '✂️ Appointment Confirmation - Stilly.Barb'
-        : '✂️ Потвърждение на резервация - Stilly.Barb',
-      html: `
+    const subject = language === 'en'
+      ? '✂️ Appointment Confirmation - Stilly.Barb'
+      : '✂️ Потвърждение на резервация - Stilly.Barb';
+
+    const html = `
         <!DOCTYPE html>
         <html>
         <head>
@@ -254,15 +242,18 @@ class EmailService {
           </div>
         </body>
         </html>
-      `
-    };
+      `;
 
     try {
-      await this.transporter.sendMail(mailOptions);
+      await this.resend.emails.send({
+        from: process.env.RESEND_FROM_EMAIL || 'Stilly.Barb <onboarding@resend.dev>',
+        to: email,
+        subject,
+        html
+      });
       console.log(`✅ Email sent to ${email}`);
     } catch (error) {
       console.error('Email sending error:', error);
-      throw error;
     }
   }
 }
