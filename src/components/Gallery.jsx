@@ -125,11 +125,25 @@ const Gallery = () => {
           onClick={() => setSelectedImage(null)}
           className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4"
         >
-          <img
-            src={selectedImage.url}
-            alt={selectedImage.alt}
-            className="max-w-full max-h-full object-contain"
-          />
+          <div className="relative w-full h-full flex items-center justify-center">
+            <button
+              onClick={(e) => { e.stopPropagation(); setSelectedImage(null); }}
+              aria-label="Close image preview"
+              className="absolute top-4 right-4 z-60 bg-black/60 hover:bg-black/80 text-white rounded-full p-2 focus:outline-none focus:ring-2 focus:ring-white"
+            >
+              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
+
+            <img
+              src={selectedImage.url}
+              alt={selectedImage.alt}
+              onClick={(e) => e.stopPropagation()}
+              className="max-w-full max-h-full object-contain"
+            />
+          </div>
         </motion.div>
       )}
     </section>
