@@ -80,10 +80,12 @@ class EmailService {
       process.env.EMAIL_USER !== 'your-email@gmail.com' &&
       process.env.EMAIL_PASSWORD !== 'your-app-password';
     
-    // Nodemailer transporter (Gmail) fallback
+    // Nodemailer transporter (custom SMTP) fallback
     if (this.enabled && this.isConfigured) {
       this.transporter = nodemailer.createTransport({
-        service: 'gmail',
+        host: process.env.EMAIL_SMTP_HOST || 'smtp.gmail.com',
+        port: parseInt(process.env.EMAIL_SMTP_PORT || '587'),
+        secure: process.env.EMAIL_SMTP_SECURE === 'true', // true for port 465, false for 587
         auth: {
           user: process.env.EMAIL_USER,
           pass: process.env.EMAIL_PASSWORD
@@ -120,7 +122,7 @@ class EmailService {
     }
 
     if (!this.isConfigured) {
-      console.warn('📧 Email is enabled but SMTP credentials are placeholders. Set EMAIL_USER and EMAIL_PASSWORD in backend/.env');
+      console.warn('📧 Email is enabled but SMTP credentials are placeholders. Set EMAIL_SMTP_HOST, EMAIL_USER, and EMAIL_PASSWORD in backend/.env');
       return;
     }
 
