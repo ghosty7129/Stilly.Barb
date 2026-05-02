@@ -118,9 +118,16 @@ const Services = () => {
                     {service.name}
                   </h3>
                   {(service.price !== null && service.price !== undefined && service.price !== '') && (
-                    <span className="mt-1.5 sm:mt-2.5 flex h-8 sm:h-9 items-center justify-center text-base sm:text-xl font-bold text-accent-gold">
-                      {typeof service.price === 'number' ? `€${service.price}` : service.price}
-                    </span>
+                    <>
+                      <span className="mt-1.5 sm:mt-2.5 flex h-8 sm:h-9 items-center justify-center text-base sm:text-xl font-bold text-accent-gold">
+                        {typeof service.price === 'number' ? `€${service.price}` : service.price}
+                      </span>
+                      {service.id === 'beard' && (
+                        <span className="mt-0.5 text-xs sm:text-sm text-neutral-500">
+                          (при комбо - 7€)
+                        </span>
+                      )}
+                    </>
                   )}
                 </div>
 
