@@ -111,6 +111,7 @@ export const translations = {
     followUsInsta: 'Follow us @stilly.barb',
     noBookingFound: 'No booking information found',
     websiteCreatedBy: 'Website created by',
+    privacyPolicy: 'Privacy Policy',
   },
 
   bg: {
@@ -229,6 +230,7 @@ export const translations = {
     followUsInsta: 'Последвайте ни @stilly.barb',
     noBookingFound: 'Информацията за резервация не е намерена',
     websiteCreatedBy: 'Уебсайт създаден от',
+    privacyPolicy: 'Политика за поверителност на личните данни',
   }
 }
 

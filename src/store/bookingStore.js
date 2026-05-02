@@ -41,32 +41,13 @@ const useBookingStore = create((set, get) => ({
   },
   
   /**
-   * Add a new booking with validation for max 1 reservation per week
+   * Add a new booking
    * @param {Object} booking - Booking object
    * @returns {Object} { success: boolean, message: string }
    */
   addBooking: async (booking) => {
     const state = get()
     const { name, phone, date } = booking
-    
-    // Check for maximum 1 reservation per week (7-day window) by phone number only
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    const weekLater = new Date(today)
-    weekLater.setDate(today.getDate() + 7)
-
-    const bookingsThisWeek = state.bookings.filter(b => {
-      const bDate = new Date(b.date)
-      bDate.setHours(0, 0, 0, 0)
-      return bDate >= today && bDate < weekLater && b.phone === phone
-    })
-    
-    if (bookingsThisWeek.length >= 1) {
-      return {
-        success: false,
-        message: 'Maximum 1 reservation per week for this phone number'
-      }
-    }
     
     try {
       // Create booking via API
@@ -106,7 +87,7 @@ const useBookingStore = create((set, get) => ({
       console.error('Failed to create booking:', error)
       return {
         success: false,
-        message: 'Failed to save booking. Please try again.'
+        message: error?.message || 'Failed to save booking. Please try again.'
       }
     }
   },

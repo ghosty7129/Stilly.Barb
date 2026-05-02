@@ -1,5 +1,6 @@
 import { useLanguage } from '../i18n/LanguageContext'
 import { getTranslation } from '../i18n/translations'
+import { Link } from 'react-router-dom'
 
 const Footer = () => {
   const { language } = useLanguage()
@@ -94,6 +95,11 @@ const Footer = () => {
         {/* Bottom */}
         <div className="border-t border-white/10 pt-8 text-center text-sm text-neutral-400">
           <p>{t('allRightsReserved')} © 2026 {t('brandName')}</p>
+          <p className="mt-3">
+            <Link to="/privacy-policy" className="hover:text-accent-gold transition-colors">
+              {t('privacyPolicy')}
+            </Link>
+          </p>
         </div>
       </div>
     </footer>

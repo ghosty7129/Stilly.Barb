@@ -4,6 +4,7 @@ import Home from './pages/Home'
 import Booking from './pages/Booking'
 import Confirmation from './pages/Confirmation'
 import Admin from './pages/Admin'
+import PrivacyPolicy from './pages/PrivacyPolicy'
 import { analytics } from './services/analytics'
 import useBookingStore from './store/bookingStore'
 
@@ -17,7 +18,8 @@ function App() {
       '/': 'Home',
       '/book': 'Booking',
       '/confirmation': 'Confirmation',
-      '/admin': 'Admin'
+      '/admin': 'Admin',
+      '/privacy-policy': 'Privacy Policy'
     }
     analytics.trackPageView(location.pathname, pageTitles[location.pathname] || 'Unknown')
   }, [location])
@@ -34,6 +36,7 @@ function App() {
         <Route path="/book" element={<Booking />} />
         <Route path="/confirmation" element={<Confirmation />} />
         <Route path="/admin" element={<Admin />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
       </Routes>
     </div>
   )

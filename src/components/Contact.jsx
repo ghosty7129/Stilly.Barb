@@ -1,45 +1,16 @@
 import { motion } from 'framer-motion'
-import { useState } from 'react'
 import { useLanguage } from '../i18n/LanguageContext'
 import { getTranslation } from '../i18n/translations'
 
 const Contact = () => {
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    message: ''
-  })
-  const [status, setStatus] = useState('')
   const { language } = useLanguage()
   const t = (key) => getTranslation(language, key)
-  const mapsUrl = 'https://maps.app.goo.gl/13yEhiP6dtmFKsoc7?g_st=ic'
-
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-    
-    try {
-      // In production, integrate with your email service
-      // For now, just show success message
-      setStatus('success')
-      setFormData({ name: '', email: '', message: '' })
-      
-      setTimeout(() => setStatus(''), 3000)
-    } catch (error) {
-      setStatus('error')
-    }
-  }
-
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    })
-  }
+  const mapsUrl = 'https://maps.app.goo.gl/1yu3jhKxN7nKA8pi8?g_st=ic'
 
   return (
     <section id="contact" className="py-24 bg-white">
       <div className="container-custom">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
+        <div className="max-w-3xl mx-auto">
           {/* Contact Info */}
           <motion.div
             initial={{ opacity: 0, x: -50 }}
@@ -114,74 +85,6 @@ const Contact = () => {
                 </div>
               </div>
             </div>
-          </motion.div>
-
-          {/* Contact Form */}
-          <motion.div
-            initial={{ opacity: 0, x: 50 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-            className="flex flex-col justify-center"
-          >
-            <h3 className="text-2xl font-semibold mb-10 text-center max-w-md mx-auto w-full">Изпратете съобщение</h3>
-            <form onSubmit={handleSubmit} className="space-y-6 max-w-md mx-auto w-full">
-              <div>
-                <label htmlFor="name" className="block text-sm font-medium mb-2">
-                  {t('fullName')}
-                </label>
-                <input
-                  type="text"
-                  id="name"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-4 py-3 border border-neutral-300 rounded-sm focus:outline-none focus:border-accent-gold transition-colors"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium mb-2">
-                  {t('email')}
-                </label>
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-4 py-3 border border-neutral-300 rounded-sm focus:outline-none focus:border-accent-gold transition-colors"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="message" className="block text-sm font-medium mb-2">
-                  {t('message')}
-                </label>
-                <textarea
-                  id="message"
-                  name="message"
-                  value={formData.message}
-                  onChange={handleChange}
-                  required
-                  rows={5}
-                  className="w-full px-4 py-3 border border-neutral-300 rounded-sm focus:outline-none focus:border-accent-gold transition-colors resize-none"
-                />
-              </div>
-
-              <button type="submit" className="btn-primary w-full">
-                {t('sendMessage')}
-              </button>
-
-              {status === 'success' && (
-                <p className="text-green-600 text-center">{t('messageSentSuccess')}</p>
-              )}
-              {status === 'error' && (
-                <p className="text-red-600 text-center">{t('messageSentError')}</p>
-              )}
-            </form>
           </motion.div>
         </div>
       </div>

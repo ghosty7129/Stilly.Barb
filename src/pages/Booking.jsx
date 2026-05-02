@@ -11,7 +11,7 @@ import { analytics } from '../services/analytics'
 
 const Booking = () => {
   const navigate = useNavigate()
-  const { addBooking, getBookingsByDate } = useBookingStore()
+  const { addBooking, getBookingsByDate, loadBookings } = useBookingStore()
   const { language } = useLanguage()
   const t = (key) => getTranslation(language, key)
   const topRef = useRef(null)
@@ -105,11 +105,20 @@ const Booking = () => {
     setChosenDateLabel(format(date, 'PPP'))
     setChosenTimeLabel('')
 
-    // Get existing bookings for this date
-    const existingBookings = getBookingsByDate(dateString)
-    const totalDuration = calculateTotalDuration()
-    const slots = generateTimeSlots(dateString, existingBookings, totalDuration)
-    setAvailableSlots(slots)
+    // Refresh from backend so the slot list reflects other people's reservations too.
+    loadBookings()
+      .then((freshBookings) => {
+        const existingBookings = (freshBookings || []).filter((booking) => booking.date === dateString)
+        const totalDuration = calculateTotalDuration()
+        const slots = generateTimeSlots(dateString, existingBookings, totalDuration)
+        setAvailableSlots(slots)
+      })
+      .catch(() => {
+        const existingBookings = getBookingsByDate(dateString)
+        const totalDuration = calculateTotalDuration()
+        const slots = generateTimeSlots(dateString, existingBookings, totalDuration)
+        setAvailableSlots(slots)
+      })
 
     if (isMobile) {
       // close mobile calendar after selection and reveal time button
@@ -137,18 +146,34 @@ const Booking = () => {
     // Regenerate time slots if date is selected
     if (selectedDate) {
       const dateString = format(selectedDate, 'yyyy-MM-dd')
-      const existingBookings = getBookingsByDate(dateString)
-      
-      // Calculate duration with new service
-      const selectedServiceObj = SERVICES.find(s => s.id === newService)
-      let totalDuration = selectedServiceObj ? selectedServiceObj.duration : 60
-      newAddons.forEach(addonId => {
-        const addon = ADDONS.find(a => a.id === addonId)
-        if (addon) totalDuration += addon.duration
-      })
-      
-      const slots = generateTimeSlots(dateString, existingBookings, totalDuration)
-      setAvailableSlots(slots)
+      loadBookings()
+        .then((freshBookings) => {
+          const existingBookings = (freshBookings || []).filter((booking) => booking.date === dateString)
+
+          // Calculate duration with new service
+          const selectedServiceObj = SERVICES.find(s => s.id === newService)
+          let totalDuration = selectedServiceObj ? selectedServiceObj.duration : 60
+          newAddons.forEach(addonId => {
+            const addon = ADDONS.find(a => a.id === addonId)
+            if (addon) totalDuration += addon.duration
+          })
+
+          const slots = generateTimeSlots(dateString, existingBookings, totalDuration)
+          setAvailableSlots(slots)
+        })
+        .catch(() => {
+          const existingBookings = getBookingsByDate(dateString)
+
+          const selectedServiceObj = SERVICES.find(s => s.id === newService)
+          let totalDuration = selectedServiceObj ? selectedServiceObj.duration : 60
+          newAddons.forEach(addonId => {
+            const addon = ADDONS.find(a => a.id === addonId)
+            if (addon) totalDuration += addon.duration
+          })
+
+          const slots = generateTimeSlots(dateString, existingBookings, totalDuration)
+          setAvailableSlots(slots)
+        })
     }
   }
 
@@ -162,18 +187,34 @@ const Booking = () => {
     // Regenerate time slots if date is selected
     if (selectedDate) {
       const dateString = format(selectedDate, 'yyyy-MM-dd')
-      const existingBookings = getBookingsByDate(dateString)
-      
-      // Calculate duration with new addons
-      const selectedService = SERVICES.find(s => s.id === formData.service)
-      let totalDuration = selectedService ? selectedService.duration : 60
-      newAddons.forEach(id => {
-        const addon = ADDONS.find(a => a.id === id)
-        if (addon) totalDuration += addon.duration
-      })
-      
-      const slots = generateTimeSlots(dateString, existingBookings, totalDuration)
-      setAvailableSlots(slots)
+      loadBookings()
+        .then((freshBookings) => {
+          const existingBookings = (freshBookings || []).filter((booking) => booking.date === dateString)
+
+          // Calculate duration with new addons
+          const selectedService = SERVICES.find(s => s.id === formData.service)
+          let totalDuration = selectedService ? selectedService.duration : 60
+          newAddons.forEach(id => {
+            const addon = ADDONS.find(a => a.id === id)
+            if (addon) totalDuration += addon.duration
+          })
+
+          const slots = generateTimeSlots(dateString, existingBookings, totalDuration)
+          setAvailableSlots(slots)
+        })
+        .catch(() => {
+          const existingBookings = getBookingsByDate(dateString)
+
+          const selectedService = SERVICES.find(s => s.id === formData.service)
+          let totalDuration = selectedService ? selectedService.duration : 60
+          newAddons.forEach(id => {
+            const addon = ADDONS.find(a => a.id === id)
+            if (addon) totalDuration += addon.duration
+          })
+
+          const slots = generateTimeSlots(dateString, existingBookings, totalDuration)
+          setAvailableSlots(slots)
+        })
     }
   }
 
@@ -194,6 +235,13 @@ const Booking = () => {
     
     // Track analytics
     analytics.trackBooking(formData.service, formData.date)
+
+    // Refresh bookings right before submit so the server is checked against the latest state.
+    try {
+      await loadBookings()
+    } catch (error) {
+      console.warn('Could not refresh bookings before submit:', error)
+    }
 
     const selectedService = SERVICES.find(s => s.id === formData.service)
     const selectedAddonDetails = (formData.addons || [])
@@ -230,7 +278,7 @@ const Booking = () => {
     })
     
     if (!result.success) {
-      alert(result.message || t('maximumReservationsReached'))
+      alert(result.message || t('errorSavingReservation'))
       return
     }
     
