@@ -94,12 +94,18 @@ const Footer = () => {
 
         {/* Bottom */}
         <div className="border-t border-white/10 pt-8 text-center text-sm text-neutral-400">
-          <p>{t('allRightsReserved')} © 2026 {t('brandName')}</p>
           <p className="mt-3">
-            <Link to="/privacy-policy" className="hover:text-accent-gold transition-colors">
-              {t('privacyPolicy')}
+            <Link
+              to="/privacy-policy"
+              className="group inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/5 px-3 py-1.5 text-xs font-medium text-white/90 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-accent-gold/70 hover:bg-accent-gold/10 hover:text-accent-gold hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-gold focus-visible:ring-offset-2 focus-visible:ring-offset-primary sm:gap-2 sm:px-4 sm:py-2 sm:text-sm"
+            >
+              <svg className="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-0.5" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path d="M6 3.5L10.5 8L6 12.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              <span>{t('privacyPolicy')}</span>
             </Link>
           </p>
+          <p className="mt-3">{t('allRightsReserved')} © 2026 {t('brandName')}</p>
         </div>
       </div>
     </footer>

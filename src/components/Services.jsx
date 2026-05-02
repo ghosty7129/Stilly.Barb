@@ -67,6 +67,34 @@ const Services = () => {
           viewport={{ once: true }}
           className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-3 md:gap-6"
         >
+          <motion.button
+            type="button"
+            variants={itemVariants}
+            onClick={() => navigate('/book')}
+            className="group relative col-span-2 flex min-h-[132px] sm:min-h-[150px] cursor-pointer overflow-hidden rounded-sm border border-neutral-300 bg-gradient-to-r from-neutral-200 via-neutral-100 to-neutral-200 p-4 text-left shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg md:col-span-2 md:items-center md:justify-between md:p-5 lg:col-span-2"
+          >
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.75),transparent_45%)]" />
+            <div className="relative z-10 flex h-full w-full flex-col justify-between gap-3 md:flex-row md:items-center md:gap-6">
+              <div className="max-w-xl">
+                <p className="font-display text-xl leading-snug text-neutral-800 sm:text-2xl">
+                  {t('makeYourComboDescription')}
+                </p>
+              </div>
+
+              <div className="flex items-center gap-3 self-start rounded-full border border-neutral-300 bg-white px-4 py-2 text-sm font-semibold text-primary transition-colors group-hover:border-neutral-400 group-hover:bg-neutral-50 md:self-center">
+                <span>{t('bookNow')}</span>
+                <motion.span
+                  className="flex h-8 w-8 items-center justify-center rounded-full border border-neutral-200 bg-primary text-white transition-transform duration-300 group-hover:translate-x-0.5"
+                  whileHover={{ x: 2 }}
+                >
+                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </motion.span>
+              </div>
+            </div>
+          </motion.button>
+
           {DISPLAY_SERVICES.map((service, index) => (
             <motion.div
               key={service.id}

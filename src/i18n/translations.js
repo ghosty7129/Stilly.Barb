@@ -34,6 +34,7 @@ export const translations = {
     serviceDescription: 'Experience the finest hairdressing services',
     serviceDescriptionTemplate: 'Professional {service} service with precision and care.',
     contactBarberForDetails: 'Contact us for more information.',
+    makeYourComboDescription: 'Combine multiple services into one personalized look and book the full experience in a single visit.',
 
     // Service Descriptions
     buzzcutDesc: 'Professional buzzcut service with precision and care.',
@@ -153,6 +154,7 @@ export const translations = {
     serviceDescription: 'Опитайте най-добрите фризьорски услуги',
     serviceDescriptionTemplate: 'Професионална {service} услуга с прецизност и грижа.',
     contactBarberForDetails: 'Свържете се с нас за повече информация.',
+    makeYourComboDescription: 'Комбинирайте няколко услуги в една и резервирайте вашия час.',
 
     // Service Descriptions
     buzzcutDesc: 'Професионална buzzcut услуга с прецизност и грижа.',
@@ -166,7 +168,7 @@ export const translations = {
     fullName: 'Име',
     email: 'Имейл',
     phoneNumber: 'Телефонен номер',
-    selectService: 'Услуги',
+    selectService: 'Услуги', 
     selectDate: 'Изберете дата',
     selectTime: 'Изберете час',
     additionalNotes: 'Допълнителни бележки',

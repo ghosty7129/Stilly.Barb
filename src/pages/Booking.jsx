@@ -49,6 +49,7 @@ const Booking = () => {
     date: '',
     time: '',
     notes: '',
+    privacyAccepted: false,
     addons: [] // Array of addon IDs
   })
   
@@ -224,6 +225,11 @@ const Booking = () => {
     // Validate all required fields
     if (!formData.name || !formData.email || !formData.phone || !formData.service || !formData.date || !formData.time) {
       alert(t('fillAllFields'))
+      return
+    }
+
+    if (!formData.privacyAccepted) {
+      alert('Please confirm that you have read the Privacy Policy to continue.')
       return
     }
     
@@ -705,10 +711,32 @@ const Booking = () => {
                 />
               </div>
 
+              {/* Privacy Policy Consent */}
+              <div className="rounded-sm border border-neutral-300 bg-neutral-50 p-3 sm:p-5">
+                <label className="flex items-start gap-2 sm:gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="privacyAccepted"
+                    checked={formData.privacyAccepted}
+                    onChange={(e) => setFormData({ ...formData, privacyAccepted: e.target.checked })}
+                    required
+                    className="mt-0.5 h-4 w-4 shrink-0 rounded border-neutral-300 text-accent-gold focus:ring-accent-gold"
+                  />
+                  <span className="text-xs sm:text-sm text-neutral-700 leading-snug sm:leading-relaxed">
+                    Запознат/а съм с{' '}
+                    <Link to="/privacy-policy" className="font-semibold text-accent-gold hover:underline">
+                      Политиката за поверителност
+                    </Link>{' '}
+                    и съм съгласен/съгласна с нея, за да завърша резервацията си.
+                  </span>
+                </label>
+              </div>
+
               {/* Submit Button */}
               <button
                 type="submit"
-                className="w-full btn-primary py-4 text-lg"
+                className={`w-full btn-primary py-4 text-lg ${!formData.privacyAccepted ? 'opacity-60 cursor-not-allowed hover:scale-100' : ''}`}
+                disabled={!formData.privacyAccepted}
               >
                 {t('confirmAppointment')}
               </button>
