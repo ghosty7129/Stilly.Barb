@@ -103,6 +103,7 @@ const Confirmation = () => {
                 </div>
                 <div className="min-w-0">
                   <p className="text-xs font-medium uppercase tracking-wide text-neutral-500">{t('fullName')}</p>
+                  <p className="mt-1 break-words text-base font-semibold text-neutral-900">{bookingName}</p>
                 </div>
               </div>
 

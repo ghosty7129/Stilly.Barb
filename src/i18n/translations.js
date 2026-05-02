@@ -163,7 +163,7 @@ export const translations = {
     bookYourAppointment: 'Резервирайте вашия час',
     selectYourPreferences: 'Изберете предпочитаната услуга, дата и час',
     personalInformation: 'Лична информация',
-    fullName: 'Иван Иванов',
+    fullName: 'Име',
     email: 'Имейл',
     phoneNumber: 'Телефонен номер',
     selectService: 'Услуги',
