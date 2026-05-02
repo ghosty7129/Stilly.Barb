@@ -1,26 +1,23 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import Header from '../components/Header'
 import Footer from '../components/Footer'
 
 const PrivacyPolicy = () => {
+  const topRef = useRef(null)
+
   useEffect(() => {
-    // Scroll to top immediately
-    window.scrollTo(0, 0)
-    document.documentElement.scrollTop = 0
-    document.body.scrollTop = 0
-    
-    // Also schedule another scroll in case content is still loading
-    const timeoutId = setTimeout(() => {
-      window.scrollTo(0, 0)
-      document.documentElement.scrollTop = 0
-      document.body.scrollTop = 0
+    window.scrollTo({ top: 0, behavior: 'auto' })
+    const scrollTimer = setTimeout(() => {
+      if (topRef.current) {
+        topRef.current.scrollIntoView({ behavior: 'auto', block: 'start' })
+      }
     }, 50)
-    
-    return () => clearTimeout(timeoutId)
+
+    return () => clearTimeout(scrollTimer)
   }, [])
 
   return (
-    <div className="min-h-screen bg-neutral-50 pt-28 sm:pt-24">
+    <div ref={topRef} className="min-h-screen bg-neutral-50 pt-28 sm:pt-24">
       <Header />
       <main>
         <section className="py-16">
