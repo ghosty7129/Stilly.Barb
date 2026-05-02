@@ -56,7 +56,7 @@ export const create = async (appointment) => {
     appointment.service_name,
     appointment.service_duration,
     appointment.service_price,
-    JSON.stringify(appointment.addons || []),
+    appointment.addons || [],
     appointment.addon_names || [],
     JSON.stringify(appointment.addon_details || []),
     appointment.total_duration,
