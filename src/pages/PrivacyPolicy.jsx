@@ -4,7 +4,19 @@ import Footer from '../components/Footer'
 
 const PrivacyPolicy = () => {
   useEffect(() => {
+    // Scroll to top immediately
     window.scrollTo(0, 0)
+    document.documentElement.scrollTop = 0
+    document.body.scrollTop = 0
+    
+    // Also schedule another scroll in case content is still loading
+    const timeoutId = setTimeout(() => {
+      window.scrollTo(0, 0)
+      document.documentElement.scrollTop = 0
+      document.body.scrollTop = 0
+    }, 50)
+    
+    return () => clearTimeout(timeoutId)
   }, [])
 
   return (
