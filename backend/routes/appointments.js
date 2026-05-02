@@ -1,5 +1,5 @@
 import express from 'express';
-import db from '../database/db.js';
+import * as db from '../database/pgdb.js';
 import emailService from '../services/emailService.js';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -84,9 +84,9 @@ const safeString = (value, maxLength = 255) => {
 };
 
 // Get all appointments
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
   try {
-    const appointments = db.getAll();
+    const appointments = await db.getAll();
     res.json(appointments);
   } catch (error) {
     console.error('Error fetching appointments:', error);
@@ -95,9 +95,9 @@ router.get('/', (req, res) => {
 });
 
 // Get appointment by ID
-router.get('/:id', (req, res) => {
+router.get('/:id', async (req, res) => {
   try {
-    const appointment = db.getById(req.params.id);
+    const appointment = await db.getById(req.params.id);
     if (!appointment) {
       return res.status(404).json({ error: 'Appointment not found' });
     }
@@ -204,7 +204,7 @@ router.post('/', async (req, res) => {
       return res.status(400).json({ error: 'Selected time is outside business hours for that day' });
     }
 
-    const conflictingAppointment = db.getAll().find((existingAppointment) => {
+    const conflictingAppointment = (await db.getAll()).find((existingAppointment) => {
       if (existingAppointment.date !== normalizedDate) return false;
 
       const existingStatus = safeString(existingAppointment.status || '', 30).toLowerCase();
@@ -250,7 +250,7 @@ router.post('/', async (req, res) => {
       created_at: new Date().toISOString()
     };
 
-    db.create(newAppointment);
+    await db.create(newAppointment);
 
     // Send confirmation email in background — don't block the response
     setImmediate(async () => {
@@ -284,9 +284,9 @@ router.post('/', async (req, res) => {
 });
 
 // Delete appointment
-router.delete('/:id', (req, res) => {
+router.delete('/:id', async (req, res) => {
   try {
-    const deleted = db.delete(req.params.id);
+    const deleted = await db.remove(req.params.id);
     
     if (!deleted) {
       return res.status(404).json({ error: 'Appointment not found' });
@@ -300,14 +300,14 @@ router.delete('/:id', (req, res) => {
 });
 
 // Update appointment status
-router.patch('/:id/status', (req, res) => {
+router.patch('/:id/status', async (req, res) => {
   try {
     const { status } = req.body;
     if (!status) {
       return res.status(400).json({ error: 'Status is required' });
     }
 
-    const updated = db.update(req.params.id, { status });
+    const updated = await db.update(req.params.id, { status });
 
     if (!updated) {
       return res.status(404).json({ error: 'Appointment not found' });
