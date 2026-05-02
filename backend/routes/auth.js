@@ -6,6 +6,15 @@ const router = express.Router();
 
 // Check if using PostgreSQL
 const usePg = Boolean(process.env.PG_ENABLED === 'true' || process.env.DATABASE_URL);
+console.log(`🔧 Auth module loaded — PostgreSQL mode: ${usePg}`);
+
+// Hardcoded fallback credentials (file-based mode)
+// password_hash is bcrypt hash of "Barb3r@2024!Secure#Admin"
+const FILE_BASED_ADMIN = {
+  id: '1',
+  username: 'barber_admin',
+  password_hash: '$2b$10$lKQn4.BFtzsxNQ28NBzp6eXcghqs4yQmGUNB9nq8iVNEmDPu4jOTa'
+};
 
 // Setup PostgreSQL pool if enabled
 let pgPool = null;
@@ -21,6 +30,7 @@ if (usePg) {
     idleTimeoutMillis: 30000,
     connectionTimeoutMillis: 2000
   });
+  console.log('🗄️  PostgreSQL pool initialised for auth');
 }
 
 // POST /api/auth/login
@@ -30,6 +40,7 @@ router.post('/login', async (req, res) => {
     console.log(`🔐 Login attempt: username="${username}"`);
 
     if (!username || !password) {
+      console.log('⚠️  Login rejected: missing username or password');
       return res.status(400).json({
         success: false,
         message: 'Username and password are required'
@@ -37,49 +48,68 @@ router.post('/login', async (req, res) => {
     }
 
     let adminUser = null;
+    let usingFallback = false;
+
+    console.log(`🔍 Checking auth mode — usePg=${usePg}, pgPool=${pgPool !== null}`);
 
     if (usePg && pgPool) {
-      // PostgreSQL mode
+      // PostgreSQL mode — attempt DB lookup first
+      console.log('🗄️  Querying PostgreSQL for user...');
       try {
-        const result = await pgPool.query('SELECT id, username, password_hash FROM admin_users WHERE username = $1', [username]);
-        adminUser = result.rows ? result.rows[0] : null;
+        const result = await pgPool.query(
+          'SELECT id, username, password_hash FROM admin_users WHERE username = $1',
+          [username]
+        );
+        adminUser = result.rows && result.rows.length > 0 ? result.rows[0] : null;
+        console.log(`🗄️  PostgreSQL query succeeded — rows returned: ${result.rows ? result.rows.length : 0}`);
       } catch (pgError) {
-        console.error('PostgreSQL query error:', pgError);
-        return res.status(500).json({
-          success: false,
-          message: 'Database connection error'
-        });
+        console.error('❌ PostgreSQL query failed:', pgError.message);
+        console.error('   Error code:', pgError.code);
+        console.error('   Full error:', pgError);
+        console.log('📁 Falling back to file-based credentials due to PostgreSQL error');
+        usingFallback = true;
       }
     } else {
-      // File-based mode - check hardcoded credentials
-      console.log('📁 Using file-based mode');
-      if (username === 'barber_admin') {
-        adminUser = {
-          id: '1',
-          username: 'barber_admin',
-          password_hash: '$2b$10$lKQn4.BFtzsxNQ28NBzp6eXcghqs4yQmGUNB9nq8iVNEmDPu4jOTa' // bcrypt hash of "Barb3r@2024!Secure#Admin"
-        };
+      console.log('📁 PostgreSQL not configured — using file-based mode directly');
+      usingFallback = true;
+    }
+
+    // File-based fallback: use hardcoded admin credentials
+    if (usingFallback) {
+      console.log('📁 File-based mode: checking hardcoded credentials');
+      if (username === FILE_BASED_ADMIN.username) {
+        adminUser = FILE_BASED_ADMIN;
         console.log('✅ User found in file-based mode');
       } else {
-        console.log('❌ Username not found in file-based mode');
+        console.log(`❌ Username "${username}" not found in file-based mode`);
       }
     }
 
     if (!adminUser) {
-      console.log('❌ Admin user not found');
+      console.log(`❌ Admin user not found for username="${username}"`);
       return res.status(401).json({
         success: false,
         message: 'Invalid username or password'
       });
     }
 
-    // Compare password with hash
-    console.log('🔒 Comparing password...');
-    const passwordMatch = await bcrypt.compare(password, adminUser.password_hash);
-    console.log(`Password match result: ${passwordMatch}`);
+    // Compare password with stored bcrypt hash
+    console.log('🔒 Comparing password with bcrypt hash...');
+    let passwordMatch = false;
+    try {
+      passwordMatch = await bcrypt.compare(password, adminUser.password_hash);
+      console.log(`🔒 Password comparison result: ${passwordMatch}`);
+    } catch (bcryptError) {
+      console.error('❌ bcrypt.compare threw an error:', bcryptError.message);
+      console.error('   Full error:', bcryptError);
+      return res.status(500).json({
+        success: false,
+        message: 'Server error during authentication'
+      });
+    }
 
     if (!passwordMatch) {
-      console.log('❌ Password does not match');
+      console.log('❌ Password does not match — login denied');
       return res.status(401).json({
         success: false,
         message: 'Invalid username or password'
@@ -87,7 +117,7 @@ router.post('/login', async (req, res) => {
     }
 
     // Login successful
-    console.log('✅ Login successful');
+    console.log(`✅ Login successful for username="${adminUser.username}" (mode: ${usingFallback ? 'file-based' : 'postgresql'})`);
     return res.status(200).json({
       success: true,
       message: 'Login successful',
@@ -97,7 +127,8 @@ router.post('/login', async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Auth error:', error);
+    console.error('❌ Unexpected auth error:', error.message);
+    console.error('   Full error:', error);
     return res.status(500).json({
       success: false,
       message: 'Server error'
