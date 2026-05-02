@@ -330,5 +330,38 @@
     "notes": "test",
     "status": "pending",
     "created_at": "2026-05-01T09:52:45.189Z"
+  },
+  {
+    "id": "608573d3-10ed-4f95-8108-efeb55b9ca34",
+    "name": "QA Test User",
+    "customer_name": "QA Test User",
+    "email": "qa.test@example.com",
+    "phone": "0886462500",
+    "service": "normal",
+    "service_name": "normal",
+    "service_duration": 60,
+    "service_price": 15,
+    "addons": [
+      "eyebrows"
+    ],
+    "addon_names": [
+      "Оформяне на вежди"
+    ],
+    "addon_details": [
+      {
+        "id": "eyebrows",
+        "name": "Оформяне на вежди",
+        "duration": 30,
+        "price": 3
+      }
+    ],
+    "total_duration": 90,
+    "total_price": 18,
+    "language": "bg",
+    "date": "2026-05-04",
+    "time": "11:00",
+    "notes": "api validation test",
+    "status": "pending",
+    "created_at": "2026-05-02T11:14:03.883Z"
   }
 ]
