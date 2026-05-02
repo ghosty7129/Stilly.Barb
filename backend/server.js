@@ -8,6 +8,7 @@ import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import appointmentsRouter from './routes/appointments.js';
 import authRouter from './routes/auth.js';
+import { runMigrations } from './database/migrate.js';
 
 dotenv.config();
 
@@ -107,8 +108,19 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Something went wrong!' });
 });
 
-app.listen(PORT, () => {
-  console.log(`✅ Backend server running on port ${PORT} (${NODE_ENV})`);
-  console.log(`🔐 Allowed CORS origins: ${allowedOrigins.join(', ')}`);
-  console.log(`📧 Email notifications: ${process.env.EMAIL_ENABLED === 'true' ? 'ENABLED' : 'DISABLED'}`);
-});
+async function start() {
+  try {
+    await runMigrations();
+  } catch (err) {
+    console.error('❌ Startup aborted: migration error', err.message);
+    process.exit(1);
+  }
+
+  app.listen(PORT, () => {
+    console.log(`✅ Backend server running on port ${PORT} (${NODE_ENV})`);
+    console.log(`🔐 Allowed CORS origins: ${allowedOrigins.join(', ')}`);
+    console.log(`📧 Email notifications: ${process.env.EMAIL_ENABLED === 'true' ? 'ENABLED' : 'DISABLED'}`);
+  });
+}
+
+start();
