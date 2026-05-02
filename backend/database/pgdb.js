@@ -12,11 +12,19 @@ const pool = new Pool({
   connectionTimeoutMillis: 2000
 })
 
+const parseJsonField = (value, fallback = []) => {
+  if (value === null || value === undefined) return fallback
+  if (typeof value === 'string') {
+    try { return JSON.parse(value) } catch { return fallback }
+  }
+  return value
+}
+
 const mapRow = (row) => ({
   ...row,
-  addons: row.addons || [],
+  addons: parseJsonField(row.addons, []),
   addon_names: row.addon_names || [],
-  addon_details: row.addon_details || []
+  addon_details: parseJsonField(row.addon_details, [])
 })
 
 export const getAll = async () => {
@@ -48,9 +56,9 @@ export const create = async (appointment) => {
     appointment.service_name,
     appointment.service_duration,
     appointment.service_price,
-    appointment.addons || [],
+    JSON.stringify(appointment.addons || []),
     appointment.addon_names || [],
-    appointment.addon_details || [],
+    JSON.stringify(appointment.addon_details || []),
     appointment.total_duration,
     appointment.total_price,
     appointment.language,
