@@ -1,5 +1,5 @@
 import express from 'express';
-import * as db from '../database/pgdb.js';
+import db from '../database/index.js';
 import emailService from '../services/emailService.js';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -22,7 +22,7 @@ const SERVICES = {
 
 const ADDONS = {
   'beard-addon': { name: 'Оформяне на брада', duration: 30, price: 7 },
-  eyebrows: { name: 'Оформяне на вежди', duration: 30, price: 3 },
+  eyebrows: { name: 'Оформяне на вежди', duration: 0, price: 3 },
   'hair-wash': { name: 'Измиване на коса', duration: 0, price: 2 }
 };
 
@@ -286,7 +286,7 @@ router.post('/', async (req, res) => {
 // Delete appointment
 router.delete('/:id', async (req, res) => {
   try {
-    const deleted = await db.remove(req.params.id);
+    const deleted = await db.delete(req.params.id);
     
     if (!deleted) {
       return res.status(404).json({ error: 'Appointment not found' });
