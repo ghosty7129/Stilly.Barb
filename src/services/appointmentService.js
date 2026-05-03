@@ -29,7 +29,7 @@ export const DISPLAY_SERVICES = [
   { id: 'fade', name: 'Подстрижка със стайлинг', duration: 60, price: 15 },
   { id: 'buzzcut', name: 'Бъзкът / Фейд', duration: 30, price: 12 },
   { id: 'beard', name: 'Оформяне на брада', duration: 30, price: 12 },
-  { id: 'eyebrows', name: 'Оформяне на вежди', duration: 15, price: 3 },
+  { id: 'eyebrows', name: 'Оформяне на вежди', duration: 0, price: 3 },
   { id: 'hair-wash', name: 'Измиване на коса', duration: 0, price: 2 },
   { id: 'hair-dye', name: 'Боядисване на коса', duration: null, price: '', contactRequired: true },
 
@@ -37,7 +37,7 @@ export const DISPLAY_SERVICES = [
 
 export const ADDONS = [
   { id: 'beard-addon', name: 'Оформяне на брада', duration: 30, price: 7 },
-  { id: 'eyebrows', name: 'Оформяне на вежди', duration: 30, displayDuration: 15, price: 3 },
+  { id: 'eyebrows', name: 'Оформяне на вежди', duration: 0, price: 3 },
   { id: 'hair-wash', name: 'Измиване на коса', duration: 0, price: 2 }
 ]
 
