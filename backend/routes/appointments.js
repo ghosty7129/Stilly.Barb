@@ -26,6 +26,18 @@ const ADDONS = {
   'hair-wash': { name: 'Измиване на коса', duration: 0, price: 2 }
 };
 
+const getAddonDuration = (addon) => {
+  const addonId = safeString(addon?.id || '', 80).toLowerCase();
+  const addonName = safeString(addon?.name || '', 120).toLowerCase();
+
+  if (addonId === 'eyebrows' || addonName.includes('вежди')) {
+    return 0;
+  }
+
+  const addonDuration = Number(addon?.duration);
+  return Number.isFinite(addonDuration) && addonDuration >= 0 ? addonDuration : 0;
+};
+
 const getDayOfWeekFromIsoDate = (dateString) => {
   const [year, month, day] = dateString.split('-').map(Number);
   return new Date(Date.UTC(year, month - 1, day)).getUTCDay();
@@ -56,20 +68,12 @@ const isDateWithinAllowedRange = (dateString) => {
 };
 
 const getAppointmentDurationMinutes = (appointment) => {
-  const normalizedTotal = Number(appointment?.total_duration);
-  if (Number.isFinite(normalizedTotal) && normalizedTotal > 0) {
-    return normalizedTotal;
-  }
-
   const baseDuration = Number(appointment?.service_duration);
   let duration = Number.isFinite(baseDuration) && baseDuration > 0 ? baseDuration : 60;
 
   if (Array.isArray(appointment?.addon_details)) {
     for (const addon of appointment.addon_details) {
-      const addonDuration = Number(addon?.duration);
-      if (Number.isFinite(addonDuration) && addonDuration >= 0) {
-        duration += addonDuration;
-      }
+      duration += getAddonDuration(addon);
     }
   }
 
@@ -180,7 +184,7 @@ router.post('/', async (req, res) => {
     const normalizedAddonDetails = uniqueAddons.map((addonId) => ({
       id: addonId,
       name: ADDONS[addonId].name,
-      duration: ADDONS[addonId].duration,
+      duration: getAddonDuration(ADDONS[addonId]),
       price: ADDONS[addonId].price
     }));
 
