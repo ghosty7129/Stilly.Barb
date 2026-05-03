@@ -127,11 +127,6 @@ const Services = () => {
                           (при комбо - 7€)
                         </span>
                       )}
-                      {service.id === 'eyebrows' && (
-                        <span className="mt-0.5 text-xs sm:text-sm text-neutral-500">
-                          (10 мин)
-                        </span>
-                      )}
                     </>
                   )}
                 </div>
@@ -144,6 +139,13 @@ const Services = () => {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                         {service.duration} min
+                      </span>
+                    ) : service.id === 'eyebrows' ? (
+                      <span className="flex items-center">
+                        <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        10 min
                       </span>
                     ) : service.duration === 0 ? (
                       <span />
