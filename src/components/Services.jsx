@@ -127,6 +127,11 @@ const Services = () => {
                           (при комбо - 7€)
                         </span>
                       )}
+                      {service.id === 'eyebrows' && (
+                        <span className="mt-0.5 text-xs sm:text-sm text-neutral-500">
+                          (10 мин)
+                        </span>
+                      )}
                     </>
                   )}
                 </div>
