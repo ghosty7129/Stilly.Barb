@@ -1,4 +1,4 @@
-import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -74,19 +74,11 @@ class EmailService {
   constructor() {
     this.enabled = process.env.EMAIL_ENABLED === 'true';
     this.isConfigured =
-      !!process.env.EMAIL_USER &&
-      !!process.env.EMAIL_PASSWORD &&
-      process.env.EMAIL_USER !== 'your-email@gmail.com' &&
-      process.env.EMAIL_PASSWORD !== 'your-app-password';
-    
+      !!process.env.RESEND_API_KEY &&
+      process.env.RESEND_API_KEY !== 'your-resend-api-key';
+
     if (this.enabled && this.isConfigured) {
-      this.transporter = nodemailer.createTransport({
-        service: 'gmail',
-        auth: {
-          user: process.env.EMAIL_USER,
-          pass: process.env.EMAIL_PASSWORD
-        }
-      });
+      this.resend = new Resend(process.env.RESEND_API_KEY);
     }
   }
 
@@ -112,7 +104,7 @@ class EmailService {
     }
 
     if (!this.isConfigured) {
-      console.warn('📧 Email is enabled but SMTP credentials are placeholders. Set EMAIL_USER and EMAIL_PASSWORD in backend/.env');
+      console.warn('📧 Email is enabled but RESEND_API_KEY is missing or a placeholder. Set RESEND_API_KEY in backend/.env');
       return;
     }
 
@@ -140,7 +132,7 @@ class EmailService {
     const totalDurationLabel = resolvedTotalDuration > 0 ? `${resolvedTotalDuration} ${language === 'en' ? 'min' : 'мин'}` : '';
 
     const mailOptions = {
-      from: process.env.EMAIL_USER,
+      from: 'Stilly.Barb <noreply@barbershop-unusual.com>',
       to: email,
       subject: language === 'en'
         ? '✂️ Appointment Confirmation - Stilly.Barb'
@@ -257,16 +249,16 @@ class EmailService {
       `
     };
 
-    if (this.transporter) {
+    if (this.resend) {
       try {
-        await this.transporter.sendMail(mailOptions);
-        console.log(`✅ Email sent (SMTP) to ${email}`);
+        await this.resend.emails.send(mailOptions);
+        console.log(`✅ Email sent (Resend) to ${email}`);
       } catch (error) {
-        console.error('Email sending error (SMTP):', error);
+        console.error('Email sending error (Resend):', error);
         throw error;
       }
     } else {
-      console.warn('No SMTP email provider configured.');
+      console.warn('No email provider configured.');
     }
   }
 }
