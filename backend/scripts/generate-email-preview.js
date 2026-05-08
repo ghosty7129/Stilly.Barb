@@ -30,52 +30,7 @@ const sample = {
   totalPrice: 12.0
 };
 
-const html = `<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <style>
-    body { margin: 0; padding: 0; background: #f3f4f6; font-family: "Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif; color: #0f172a; }
-    .wrapper { width: 100%; padding: 20px 12px; box-sizing: border-box; }
-    .card { max-width: 720px; margin: 0 auto; background: #ffffff; border: 1px solid #e6e9ee; border-radius: 16px; box-shadow: 0 20px 60px rgba(2,6,23,0.08); overflow: hidden; }
-    .header { background: #8a8f99; color: #ffffff; text-align: center; padding: 28px 18px 22px; }
-    .check { width: 56px; height: 56px; border-radius: 999px; background: #ffffff; color: #7b8794; display: inline-block; line-height: 56px; font-size: 28px; font-weight: 700; margin-bottom: 12px; }
-    .title { margin: 0; font-size: 20px; line-height: 1.28; font-weight: 700; letter-spacing: 0.2px; word-break: break-word; white-space: normal; overflow-wrap: anywhere; }
-    .subtitle { margin: 8px 0 0; font-size: 13px; line-height: 1.4; color: rgba(255,255,255,0.92); }
-    .content { padding: 18px 16px 22px; }
-    .section-title { margin: 0 0 12px; font-size: 17px; line-height: 1.25; font-weight: 800; color: #0f172a; }
-    .detail { display: block; background: #fbfbfc; border: 1px solid #eef2f6; padding: 12px; margin-bottom: 12px; border-radius: 12px; }
-    .label { font-size: 11px; line-height: 1.2; color: #6b7280; margin-bottom: 4px; }
-    .value { font-size: 16px; line-height: 1.35; color: #0f172a; font-weight: 700; word-break: break-word; white-space: normal; overflow-wrap: anywhere; }
-    .subvalue { font-size: 13px; line-height: 1.4; color: #475569; margin-top: 4px; }
-    .total { margin-top: 14px; border-radius: 10px; border: 1px solid #e6e9ee; background: #f8fafc; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; font-weight: 800; }
-    .note { margin-top: 16px; padding: 12px 14px; background: #f1f5f9; border: 1px solid #e2e8f0; color: #0f172a; font-size: 13px; line-height: 1.4; border-radius: 10px; }
-    .muted { color: #6b7280; font-size: 12px; }
-  </style>
-</head>
-<body>
-  <div class="wrapper">
-    <div class="card">
-        <div class="header">
-        <div class="check">✓</div>
-        <h1 class="title" style="margin:0;font-size:20px;line-height:1.38;font-weight:700;letter-spacing:0.2px;word-break:break-word;white-space:normal;overflow-wrap:anywhere">${labels.title}</h1>
-        <p class="subtitle" style="margin:8px 0 0;font-size:13px;line-height:1.4;color:rgba(255,255,255,0.92)">${labels.subtitle}</p>
-      </div>
-      <div class="content">
-        <h2 class="section-title">${labels.details}</h2>
-        <div class="detail"><div class="label">${labels.fullName}</div><div class="value">${sample.name}</div></div>
-        <div class="detail"><div class="label">${labels.email}</div><div class="value">${sample.email}</div></div>
-        <div class="detail"><div class="label">${labels.phone}</div><div class="value">${sample.phone}</div></div>
-        <div class="detail"><div class="label">${labels.service}</div><div class="value" style="white-space:normal;overflow-wrap:anywhere;line-height:1.28">${sample.service}</div><div class="subvalue" style="line-height:1.28">${sample.serviceDuration} мин • € ${sample.servicePrice.toFixed(2)}</div></div>
-        <div class="total"><span>${labels.totalPrice}:&nbsp;</span><span>€ ${sample.totalPrice.toFixed(2)}</span></div>
-        <div class="muted" style="margin-top:8px;">Общо време: ${sample.serviceDuration} мин</div>
-        <div class="note"><strong>${labels.confirmationNote}</strong> ${labels.confirmationEmailNote(sample.email)}</div>
-      </div>
-    </div>
-  </div>
-</body>
-</html>`;
+const html = `<!doctype html><html><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width,initial-scale=1" /></head><body style="margin:0;padding:0;background:#f3f4f6;font-family:Segoe UI, Helvetica, Arial, sans-serif;color:#0f172a;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f3f4f6;width:100%;"><tr><td align="center" style="padding:18px 12px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="720" style="width:100%;max-width:720px;background:#ffffff;border:1px solid #e6e9ee;border-radius:12px;overflow:hidden;"><tr><td style="background:#8a8f99;padding:28px 18px 22px;text-align:center;color:#ffffff;"><div style="width:56px;height:56px;border-radius:999px;background:#ffffff;color:#7b8794;display:inline-block;line-height:56px;font-size:28px;font-weight:700;margin-bottom:12px">✓</div><h1 style="margin:0;font-size:20px;line-height:1.34;font-weight:700;color:#ffffff;letter-spacing:0.2px;word-break:break-word;white-space:normal;overflow-wrap:anywhere">${labels.title}</h1><p style="margin:8px 0 0;font-size:13px;line-height:1.4;color:rgba(255,255,255,0.92)">${labels.subtitle}</p></td></tr><tr><td style="padding:18px 16px 22px;"><h2 style="margin:0 0 12px;font-size:17px;line-height:1.25;font-weight:800;color:#0f172a">${labels.details}</h2><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:12px;background:#fbfbfc;border:1px solid #eef2f6;border-radius:12px;"><tr><td style="padding:12px"><div style="font-size:11px;line-height:1.2;color:#6b7280;margin-bottom:4px">${labels.fullName}</div><div style="font-size:16px;line-height:1.35;font-weight:700;color:#0f172a;white-space:normal;overflow-wrap:anywhere">${sample.name}</div></td></tr></table><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:12px;background:#fbfbfc;border:1px solid #eef2f6;border-radius:12px;"><tr><td style="padding:12px"><div style="font-size:11px;line-height:1.2;color:#6b7280;margin-bottom:4px">${labels.email}</div><div style="font-size:16px;line-height:1.35;font-weight:700;color:#0f172a;word-break:break-word;white-space:normal;overflow-wrap:anywhere">${sample.email}</div></td></tr></table><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:12px;background:#fbfbfc;border:1px solid #eef2f6;border-radius:12px;"><tr><td style="padding:12px"><div style="font-size:11px;line-height:1.2;color:#6b7280;margin-bottom:4px">${labels.phone}</div><div style="font-size:16px;line-height:1.35;font-weight:700;color:#0f172a">${sample.phone}</div></td></tr></table><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:12px;background:#fbfbfc;border:1px solid #eef2f6;border-radius:12px;"><tr><td style="padding:12px"><div style="font-size:11px;line-height:1.2;color:#6b7280;margin-bottom:4px">${labels.service}</div><div style="font-size:18px;line-height:1.18;font-weight:800;color:#0f172a;white-space:normal;overflow-wrap:anywhere">${sample.service}</div><div style="font-size:13px;line-height:1.3;color:#475569;margin-top:6px">${sample.serviceDuration} мин • € ${sample.servicePrice.toFixed(2)}</div></td></tr></table><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:8px;"><tr><td style="padding:0"><div style="display:block;border-radius:10px;border:1px solid #e6e9ee;background:#f8fafc;padding:14px 16px;font-weight:800;"><span style="font-size:14px;color:#0f172a">${labels.totalPrice}:&nbsp;</span><span style="float:right;font-size:18px;color:#7c3aed">€ ${sample.totalPrice.toFixed(2)}</span><div style="clear:both"></div></div></td></tr></table><div style="margin-top:8px;color:#6b7280;font-size:12px">Общо време: ${sample.serviceDuration} мин</div><div style="margin-top:16px;padding:12px;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:10px;font-size:13px;color:#0f172a;"><strong>${labels.confirmationNote}</strong> ${labels.confirmationEmailNote(sample.email)}</div></td></tr></table></td></tr></table></body></html>`;
 
 const outPath = path.join(process.cwd(), 'backend', 'tmp', 'latest-email.html');
 try {
