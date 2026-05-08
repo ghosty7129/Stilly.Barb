@@ -77,8 +77,26 @@ class EmailService {
       !!process.env.RESEND_API_KEY &&
       process.env.RESEND_API_KEY !== 'your-resend-api-key';
 
+    console.log('[EmailService] Initializing...');
+    console.log('[EmailService] EMAIL_ENABLED:', process.env.EMAIL_ENABLED);
+    console.log('[EmailService] RESEND_API_KEY present:', !!process.env.RESEND_API_KEY);
+    console.log('[EmailService] RESEND_API_KEY prefix:', process.env.RESEND_API_KEY
+      ? process.env.RESEND_API_KEY.slice(0, 8) + '...'
+      : '(none)');
+    console.log('[EmailService] isConfigured:', this.isConfigured);
+
     if (this.enabled && this.isConfigured) {
-      this.resend = new Resend(process.env.RESEND_API_KEY);
+      try {
+        this.resend = new Resend(process.env.RESEND_API_KEY);
+        console.log('[EmailService] Resend client created successfully. Type:', typeof this.resend);
+      } catch (initError) {
+        console.error('[EmailService] Failed to create Resend client:', initError);
+        this.resend = null;
+      }
+    } else {
+      console.warn('[EmailService] Resend client NOT created. enabled=%s, isConfigured=%s',
+        this.enabled, this.isConfigured);
+      this.resend = null;
     }
   }
 
@@ -249,16 +267,36 @@ class EmailService {
       `
     };
 
-    if (this.resend) {
-      try {
-        await this.resend.emails.send(mailOptions);
-        console.log(`✅ Email sent (Resend) to ${email}`);
-      } catch (error) {
-        console.error('Email sending error (Resend):', error);
-        throw error;
-      }
-    } else {
+    console.log('[EmailService] Preparing to send email. mailOptions:', {
+      from: mailOptions.from,
+      to: mailOptions.to,
+      subject: mailOptions.subject,
+      htmlLength: mailOptions.html ? mailOptions.html.length : 0
+    });
+
+    if (!this.resend) {
+      console.error('[EmailService] Cannot send — this.resend is null/undefined. ' +
+        'Check that EMAIL_ENABLED=true and RESEND_API_KEY is set correctly.');
       console.warn('No email provider configured.');
+      return;
+    }
+
+    try {
+      console.log('[EmailService] Calling resend.emails.send()...');
+      const response = await this.resend.emails.send(mailOptions);
+      console.log('[EmailService] Resend API raw response:', JSON.stringify(response));
+      if (response && response.error) {
+        console.error('[EmailService] Resend returned an error in the response body:', response.error);
+        throw new Error(`Resend API error: ${JSON.stringify(response.error)}`);
+      }
+      console.log(`✅ Email sent (Resend) to ${email}. id=${response && response.data && response.data.id}`);
+    } catch (error) {
+      console.error('[EmailService] resend.emails.send() threw an exception:');
+      console.error('[EmailService] Error name   :', error && error.name);
+      console.error('[EmailService] Error message:', error && error.message);
+      console.error('[EmailService] Error status :', error && error.statusCode);
+      console.error('[EmailService] Full error   :', error);
+      throw error;
     }
   }
 }
