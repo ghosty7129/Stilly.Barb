@@ -170,13 +170,13 @@ class EmailService {
             .card { max-width: 720px; margin: 0 auto; background: #ffffff; border: 1px solid #e6e9ee; border-radius: 16px; box-shadow: 0 20px 60px rgba(2,6,23,0.08); overflow: hidden; }
             .header { background: #8a8f99; color: #ffffff; text-align: center; padding: 28px 18px 22px; }
             .check { width: 56px; height: 56px; border-radius: 999px; background: #ffffff; color: #7b8794; display: inline-block; line-height: 56px; font-size: 28px; font-weight: 700; margin-bottom: 12px; }
-            .title { margin: 0; font-size: 20px; line-height: 1.2; font-weight: 700; letter-spacing: 0; word-break: break-word; }
+            .title { margin: 0; font-size: 20px; line-height: 1.28; font-weight: 700; letter-spacing: 0.2px; word-break: break-word; white-space: normal; overflow-wrap: anywhere; }
             .subtitle { margin: 8px 0 0; font-size: 13px; line-height: 1.4; color: rgba(255,255,255,0.92); }
             .content { padding: 18px 16px 22px; }
             .section-title { margin: 0 0 12px; font-size: 17px; line-height: 1.25; font-weight: 800; color: #0f172a; }
             .detail { display: block; background: #fbfbfc; border: 1px solid #eef2f6; padding: 12px; margin-bottom: 12px; border-radius: 12px; }
             .label { font-size: 11px; line-height: 1.2; color: #6b7280; margin-bottom: 4px; }
-            .value { font-size: 16px; line-height: 1.35; color: #0f172a; font-weight: 700; word-break: break-word; }
+            .value { font-size: 16px; line-height: 1.35; color: #0f172a; font-weight: 700; word-break: break-word; white-space: normal; overflow-wrap: anywhere; }
             .subvalue { font-size: 13px; line-height: 1.4; color: #475569; margin-top: 4px; }
             .total { margin-top: 14px; border-radius: 10px; border: 1px solid #e6e9ee; background: #f8fafc; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; font-weight: 800; }
             .total span:last-child { font-size: 18px; color: #7c3aed; }
@@ -193,10 +193,10 @@ class EmailService {
         <body>
           <div class="wrapper">
             <div class="card">
-              <div class="header">
+                <div class="header">
                 <div class="check">✓</div>
-                <h1 class="title">${escapeHtml(labels.title)}</h1>
-                <p class="subtitle">${escapeHtml(labels.subtitle)}</p>
+                <h1 class="title" style="margin:0;font-size:20px;line-height:1.38;font-weight:700;letter-spacing:0.2px;word-break:break-word;white-space:normal;overflow-wrap:anywhere">${escapeHtml(labels.title)}</h1>
+                <p class="subtitle" style="margin:8px 0 0;font-size:13px;line-height:1.4;color:rgba(255,255,255,0.92)">${escapeHtml(labels.subtitle)}</p>
               </div>
               <div class="content">
                 <h2 class="section-title">${escapeHtml(labels.details)}</h2>
@@ -225,8 +225,8 @@ class EmailService {
                 <div class="detail">
                   <div>
                     <div class="label">${escapeHtml(labels.service)}</div>
-                    <div class="value">${safeService}</div>
-                    <div class="subvalue">${resolvedServiceDuration ? `${resolvedServiceDuration} ${language === 'en' ? 'minutes' : 'мин'}` : ''}${resolvedServiceDuration ? ' • ' : ''}${formatMoney(resolvedServicePrice)}</div>
+                    <div class="value" style="white-space:normal;overflow-wrap:anywhere;line-height:1.28">${safeService}</div>
+                    <div class="subvalue" style="line-height:1.28">${resolvedServiceDuration ? `${resolvedServiceDuration} ${language === 'en' ? 'minutes' : 'мин'}` : ''}${resolvedServiceDuration ? ' • ' : ''}${formatMoney(resolvedServicePrice)}</div>
                   </div>
                 </div>
 
