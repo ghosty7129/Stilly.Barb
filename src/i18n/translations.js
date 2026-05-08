@@ -193,7 +193,7 @@ export const translations = {
     confirmationMessage: 'Благoдaрим, че резервирахте час при нас. Ще се видим скоро!',
     backToBooking: '← Резервирайте друга',
     dateTime: 'Дата и час',
-    confirmationEmailNote: 'Моля, елате 5 минути по-рано за вашия час.',
+    confirmationEmailNote: 'Изпратен е потвърдителен имейл до вашата поща, който можете да очаквате до 5 минути! Моля, елате 5 минути по-рано за вашия час.',
 
     // Admin
     adminPanel: 'Админ панел',
