@@ -1,5 +1,6 @@
 import { Resend } from 'resend';
 import dotenv from 'dotenv';
+import fs from 'fs';
 
 dotenv.config();
 
@@ -116,12 +117,14 @@ class EmailService {
     time,
     notes = ''
   }) {
-    if (!this.enabled) {
+    const previewOnly = process.env.SAVE_EMAIL_PREVIEW === 'true';
+
+    if (!this.enabled && !previewOnly) {
       console.log('📧 Email disabled - Would send confirmation to:', email);
       return;
     }
 
-    if (!this.isConfigured) {
+    if (!this.isConfigured && !previewOnly) {
       console.warn('📧 Email is enabled but RESEND_API_KEY is missing or a placeholder. Set RESEND_API_KEY in backend/.env');
       return;
     }
@@ -150,11 +153,11 @@ class EmailService {
     const totalDurationLabel = resolvedTotalDuration > 0 ? `${resolvedTotalDuration} ${language === 'en' ? 'min' : 'мин'}` : '';
 
     const mailOptions = {
-      from: 'Stilly.Barb <noreply@barbershop-unusual.com>',
+      from: 'Barbershop Unusual <noreply@barbershop-unusual.com>',
       to: email,
       subject: language === 'en'
-        ? '✂️ Appointment Confirmation - Stilly.Barb'
-        : '✂️ Потвърждение на резервация - Stilly.Barb',
+        ? '✂️ Appointment Confirmation - Barbershop Unusual'
+        : '✂️ Потвърждение на резервация - Barbershop Unusual',
       html: `
         <!DOCTYPE html>
         <html>
@@ -163,25 +166,29 @@ class EmailService {
           <meta name="viewport" content="width=device-width, initial-scale=1.0" />
           <style>
             body { margin: 0; padding: 0; background: #f3f4f6; font-family: "Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif; color: #0f172a; }
-            .wrapper { width: 100%; padding: 28px 12px; box-sizing: border-box; }
+            .wrapper { width: 100%; padding: 20px 12px; box-sizing: border-box; }
             .card { max-width: 720px; margin: 0 auto; background: #ffffff; border: 1px solid #e6e9ee; border-radius: 16px; box-shadow: 0 20px 60px rgba(2,6,23,0.08); overflow: hidden; }
-            .header { background: #8a8f99; color: #ffffff; text-align: center; padding: 36px 20px 28px; }
-            .check { width: 56px; height: 56px; border-radius: 999px; background: #ffffff; color: #7b8794; display: inline-block; line-height: 56px; font-size: 28px; font-weight: 700; margin-bottom: 14px; }
-            .title { margin: 0; font-size: 22px; line-height: 1.2; font-weight: 800; letter-spacing: -0.2px; }
+            .header { background: #8a8f99; color: #ffffff; text-align: center; padding: 28px 18px 22px; }
+            .check { width: 56px; height: 56px; border-radius: 999px; background: #ffffff; color: #7b8794; display: inline-block; line-height: 56px; font-size: 28px; font-weight: 700; margin-bottom: 12px; }
+            .title { margin: 0; font-size: 20px; line-height: 1.2; font-weight: 700; letter-spacing: 0; word-break: break-word; }
             .subtitle { margin: 8px 0 0; font-size: 13px; line-height: 1.4; color: rgba(255,255,255,0.92); }
-            .content { padding: 22px 20px 28px; }
-            .section-title { margin: 0 0 14px; font-size: 18px; line-height: 1.25; font-weight: 800; color: #0f172a; }
+            .content { padding: 18px 16px 22px; }
+            .section-title { margin: 0 0 12px; font-size: 17px; line-height: 1.25; font-weight: 800; color: #0f172a; }
             .detail { display: block; background: #fbfbfc; border: 1px solid #eef2f6; padding: 12px; margin-bottom: 12px; border-radius: 12px; }
-            /* removed .icon placeholder to avoid empty white boxes in emails */
             .label { font-size: 11px; line-height: 1.2; color: #6b7280; margin-bottom: 4px; }
-            .value { font-size: 15px; line-height: 1.35; color: #0f172a; font-weight: 700; }
+            .value { font-size: 16px; line-height: 1.35; color: #0f172a; font-weight: 700; word-break: break-word; }
             .subvalue { font-size: 13px; line-height: 1.4; color: #475569; margin-top: 4px; }
             .total { margin-top: 14px; border-radius: 10px; border: 1px solid #e6e9ee; background: #f8fafc; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; font-weight: 800; }
             .total span:last-child { font-size: 18px; color: #7c3aed; }
             .note { margin-top: 16px; padding: 12px 14px; background: #f1f5f9; border: 1px solid #e2e8f0; color: #0f172a; font-size: 13px; line-height: 1.4; border-radius: 10px; }
             .muted { color: #6b7280; font-size: 12px; }
             .spacer { height: 2px; }
-              </style>
+            @media only screen and (max-width:480px){
+              .title{font-size:18px !important}
+              .value{font-size:15px !important}
+              .card{border-radius:12px}
+            }
+          </style>
         </head>
         <body>
           <div class="wrapper">
@@ -273,6 +280,17 @@ class EmailService {
       subject: mailOptions.subject,
       htmlLength: mailOptions.html ? mailOptions.html.length : 0
     });
+
+    // Optional: save preview HTML locally if requested (useful during development)
+    try {
+      if (process.env.SAVE_EMAIL_PREVIEW === 'true') {
+        const previewPath = new URL('../../backend/tmp/latest-email.html', import.meta.url).pathname.replace(/^\\/,'');
+        fs.writeFileSync(previewPath, mailOptions.html, { encoding: 'utf8' });
+        console.log('[EmailService] Saved email preview to', previewPath);
+      }
+    } catch (e) {
+      console.warn('[EmailService] Failed to save preview HTML:', e && e.message);
+    }
 
     if (!this.resend) {
       console.error('[EmailService] Cannot send — this.resend is null/undefined. ' +
