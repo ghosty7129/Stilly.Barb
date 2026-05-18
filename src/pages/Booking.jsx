@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import Header from '../components/Header'
 import { motion, AnimatePresence } from 'framer-motion'
-import { format, addDays, isSameDay } from 'date-fns'
+import { format, addDays, isSameDay, startOfMonth, endOfMonth, eachDayOfInterval, isBefore, startOfDay } from 'date-fns'
 import { SERVICES, ADDONS, generateTimeSlots, isValidBookingDate, formatTime } from '../services/appointmentService'
 import useBookingStore from '../store/bookingStore'
 import { useLanguage } from '../i18n/LanguageContext'
@@ -60,6 +60,7 @@ const Booking = () => {
   const [showTimePicker, setShowTimePicker] = useState(false)
   const [chosenDateLabel, setChosenDateLabel] = useState('')
   const [chosenTimeLabel, setChosenTimeLabel] = useState('')
+  const [currentMonthDate, setCurrentMonthDate] = useState(new Date())
 
   // Calculate total duration based on service + addons
   const calculateTotalDuration = () => {
@@ -87,16 +88,54 @@ const Booking = () => {
     return total
   }
 
-  // Generate next 30 days for date selection
-  const generateDates = () => {
-    const dates = []
-    for (let i = 0; i < 30; i++) {
-      const date = addDays(new Date(), i)
-      if (isValidBookingDate(date)) {
-        dates.push(date)
-      }
-    }
+  // Generate dates for the current month view
+  const generateDatesForMonth = (monthDate) => {
+    const start = startOfMonth(monthDate)
+    const end = endOfMonth(monthDate)
+    const today = startOfDay(new Date())
+    
+    // If month is before today, adjust to start from today
+    const adjustedStart = isBefore(start, today) ? today : start
+    
+    let dates = eachDayOfInterval({
+      start: adjustedStart,
+      end: end
+    })
+    
+    // Filter to only valid booking dates within the 90-day window
+    const maxDate = addDays(new Date(), 90)
+    dates = dates.filter(date => isValidBookingDate(date) && !isBefore(date, new Date()) && !isBefore(maxDate, date))
+    
     return dates
+  }
+
+  // Navigate to next month
+  const goToNextMonth = () => {
+    setCurrentMonthDate(new Date(currentMonthDate.getFullYear(), currentMonthDate.getMonth() + 1, 1))
+  }
+
+  // Navigate to previous month
+  const goToPreviousMonth = () => {
+    const today = new Date()
+    const newMonth = new Date(currentMonthDate.getFullYear(), currentMonthDate.getMonth() - 1, 1)
+    // Don't allow going before current month
+    if (newMonth.getFullYear() > today.getFullYear() || 
+        (newMonth.getFullYear() === today.getFullYear() && newMonth.getMonth() >= today.getMonth())) {
+      setCurrentMonthDate(newMonth)
+    }
+  }
+
+  // Check if we can navigate forward (within 3 months)
+  const canGoForward = () => {
+    const maxDate = addDays(new Date(), 90)
+    const nextMonth = new Date(currentMonthDate.getFullYear(), currentMonthDate.getMonth() + 2, 1)
+    return !isBefore(maxDate, nextMonth)
+  }
+
+  // Check if we can navigate backward
+  const canGoBackward = () => {
+    const today = new Date()
+    return !(currentMonthDate.getFullYear() === today.getFullYear() && currentMonthDate.getMonth() === today.getMonth())
   }
 
   const handleDateSelect = (date) => {
@@ -510,11 +549,42 @@ const Booking = () => {
               </div>
 
               {/* Date Selection */}
-              {/* Desktop: keep existing grid */}
+              {/* Desktop: month view with navigation */}
               <div className="hidden md:block">
                 <h2 className="text-2xl font-semibold mb-6">{t('selectDate')}</h2>
-                <div className="grid grid-cols-4 md:grid-cols-7 gap-2">
-                  {generateDates().map((date) => (
+                
+                {/* Month Navigation */}
+                <div className="flex items-center justify-between mb-6 gap-4">
+                  <button
+                    type="button"
+                    onClick={goToPreviousMonth}
+                    disabled={!canGoBackward()}
+                    className="p-2 rounded-sm border-2 border-neutral-300 hover:border-accent-gold disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    </svg>
+                  </button>
+                  
+                  <h3 className="text-lg font-semibold min-w-48 text-center">
+                    {format(currentMonthDate, 'MMMM yyyy')}
+                  </h3>
+                  
+                  <button
+                    type="button"
+                    onClick={goToNextMonth}
+                    disabled={!canGoForward()}
+                    className="p-2 rounded-sm border-2 border-neutral-300 hover:border-accent-gold disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </button>
+                </div>
+                
+                {/* Calendar Grid */}
+                <div className="grid grid-cols-7 gap-2">
+                  {generateDatesForMonth(currentMonthDate).map((date) => (
                     <button
                       key={date.toISOString()}
                       type="button"
@@ -567,10 +637,39 @@ const Booking = () => {
                           animate={{ opacity: 1, height: 'auto' }}
                           exit={{ opacity: 0, height: 0 }}
                           transition={{ duration: 0.25 }}
-                          className="overflow-y-auto overflow-x-hidden max-h-96 bg-white p-4 rounded-sm border w-full"
+                          className="overflow-hidden bg-white p-4 rounded-sm border w-full"
                         >
-                          <div className="grid grid-cols-5 gap-3">
-                            {generateDates().map((date) => (
+                          {/* Mobile Month Navigation */}
+                          <div className="flex items-center justify-between mb-4 gap-2">
+                            <button
+                              type="button"
+                              onClick={goToPreviousMonth}
+                              disabled={!canGoBackward()}
+                              className="p-1.5 rounded-sm border border-neutral-300 hover:border-accent-gold disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                              </svg>
+                            </button>
+                            
+                            <h4 className="text-sm font-semibold flex-1 text-center">
+                              {format(currentMonthDate, 'MMM yyyy')}
+                            </h4>
+                            
+                            <button
+                              type="button"
+                              onClick={goToNextMonth}
+                              disabled={!canGoForward()}
+                              className="p-1.5 rounded-sm border border-neutral-300 hover:border-accent-gold disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                              </svg>
+                            </button>
+                          </div>
+
+                          <div className="grid grid-cols-5 gap-3 max-h-64 overflow-y-auto">
+                            {generateDatesForMonth(currentMonthDate).map((date) => (
                               <button
                                 key={date.toISOString()}
                                 type="button"
