@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { format, addDays, isSameDay } from 'date-fns'
+import { format, addDays, isSameDay, startOfMonth, endOfMonth, eachDayOfInterval, isBefore, startOfDay } from 'date-fns'
 import useBookingStore from '../store/bookingStore'
-import { SERVICES, ADDONS, formatTime } from '../services/appointmentService'
+import { SERVICES, ADDONS, formatTime, isValidBookingDate } from '../services/appointmentService'
 import { useLanguage } from '../i18n/LanguageContext'
 import { getTranslation } from '../i18n/translations'
 
@@ -18,6 +18,7 @@ const Admin = () => {
   const [showPassword, setShowPassword] = useState(false)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [selectedDate, setSelectedDate] = useState(new Date())
+  const [currentMonthDate, setCurrentMonthDate] = useState(new Date())
   const [loginError, setLoginError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
 
@@ -113,9 +114,99 @@ const Admin = () => {
     return dates
   }
 
+  const generateDatesForMonth = (monthDate) => {
+    const start = startOfMonth(monthDate)
+    const end = endOfMonth(monthDate)
+    const today = startOfDay(new Date())
+
+    const adjustedStart = isBefore(start, today) ? today : start
+
+    let dates = eachDayOfInterval({ start: adjustedStart, end: end })
+
+    const maxDate = startOfDay(addDays(new Date(), 90))
+    dates = dates.filter(date => {
+      const d = startOfDay(date)
+      return isValidBookingDate(date) && !isBefore(d, today) && !isBefore(maxDate, d)
+    })
+
+    return dates
+  }
+
+  const goToNextMonth = () => {
+    setCurrentMonthDate(new Date(currentMonthDate.getFullYear(), currentMonthDate.getMonth() + 1, 1))
+  }
+
+  const goToPreviousMonth = () => {
+    const today = new Date()
+    const newMonth = new Date(currentMonthDate.getFullYear(), currentMonthDate.getMonth() - 1, 1)
+    if (newMonth.getFullYear() > today.getFullYear() || (newMonth.getFullYear() === today.getFullYear() && newMonth.getMonth() >= today.getMonth())) {
+      setCurrentMonthDate(newMonth)
+    }
+  }
+
+  const canGoForward = () => {
+    const maxDate = addDays(new Date(), 90)
+    const nextMonth = new Date(currentMonthDate.getFullYear(), currentMonthDate.getMonth() + 2, 1)
+    return !isBefore(maxDate, nextMonth)
+  }
+
+  const canGoBackward = () => {
+    const today = new Date()
+    return !(currentMonthDate.getFullYear() === today.getFullYear() && currentMonthDate.getMonth() === today.getMonth())
+  }
+
   // Get bookings for selected date
   const selectedDateString = format(selectedDate, 'yyyy-MM-dd')
   const dateBookings = bookings.filter(b => b.date === selectedDateString)
+
+  const handleBlockDay = async () => {
+    if (!window.confirm('Block entire day? This will reserve all available slots for the selected date.')) return;
+
+    try {
+      const resp = await fetch(`${apiUrl}/appointments/block-day`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ date: selectedDateString })
+      })
+
+      const data = await resp.json()
+      if (!resp.ok) {
+        alert(data.error || 'Failed to block the day')
+        return
+      }
+
+      // Reload bookings to reflect blocked slots
+      await loadBookings()
+      alert(`Day blocked — ${data.createdCount} slots reserved.`)
+    } catch (err) {
+      console.error('Block day error:', err)
+      alert('Network error while blocking the day')
+    }
+  }
+
+  const handleUnblockDay = async () => {
+    if (!window.confirm('Unblock entire day? This will remove admin-blocked reservations for the selected date.')) return;
+
+    try {
+      const resp = await fetch(`${apiUrl}/appointments/unblock-day`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ date: selectedDateString })
+      })
+
+      const data = await resp.json()
+      if (!resp.ok) {
+        alert(data.error || 'Failed to unblock the day')
+        return
+      }
+
+      await loadBookings()
+      alert(`Unblocked ${data.removedCount} admin-blocked slots.`)
+    } catch (err) {
+      console.error('Unblock day error:', err)
+      alert('Network error while unblocking the day')
+    }
+  }
 
   if (!isAuthenticated) {
     return (
@@ -253,8 +344,36 @@ const Admin = () => {
               <div className="lg:col-span-1">
                 <div className="bg-white rounded-sm shadow p-6">
                   <h2 className="text-xl font-semibold mb-4">Select Date</h2>
+                  <div className="mb-4 flex items-center justify-between gap-4">
+                    <button
+                      type="button"
+                      onClick={goToPreviousMonth}
+                      disabled={!canGoBackward()}
+                      className="p-2 rounded-sm border-2 border-neutral-300 hover:border-accent-gold disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                      </svg>
+                    </button>
+
+                    <h3 className="text-lg font-semibold min-w-48 text-center">
+                      {format(currentMonthDate, 'MMMM yyyy')}
+                    </h3>
+
+                    <button
+                      type="button"
+                      onClick={goToNextMonth}
+                      disabled={!canGoForward()}
+                      className="p-2 rounded-sm border-2 border-neutral-300 hover:border-accent-gold disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </button>
+                  </div>
+
                   <div className="grid grid-cols-7 gap-2">
-                    {generateDates().map((date) => (
+                    {generateDatesForMonth(currentMonthDate).map((date) => (
                       <button
                         key={date.toISOString()}
                         onClick={() => setSelectedDate(date)}
@@ -274,6 +393,29 @@ const Admin = () => {
                     <p className="text-lg font-semibold">
                       {format(selectedDate, 'MMM d, yyyy')}
                     </p>
+                    <div className="mt-3 flex items-center gap-3">
+                      <button
+                        type="button"
+                        onClick={handleBlockDay}
+                        className="btn-secondary px-3 py-2 text-sm"
+                      >
+                        Make Day Off
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleUnblockDay}
+                        className="btn-secondary px-3 py-2 text-sm bg-green-50 hover:bg-green-100"
+                      >
+                        Unblock Day
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => { setSelectedDate(new Date()); loadBookings() }}
+                        className="text-sm text-neutral-600 hover:text-accent-gold"
+                      >
+                        Reset
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -287,9 +429,11 @@ const Admin = () => {
                   
                   {dateBookings.length === 0 ? (
                     <div className="text-center py-12">
-                      <svg className="w-16 h-16 text-neutral-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                      </svg>
+                      <img
+                        src={`${apiUrl}/images/logos/UNUSUAL STILLY BARB BLACK.png`}
+                        alt="Unusual Stilly Barb"
+                        className="mx-auto mb-4 h-16 w-auto object-contain"
+                      />
                       <p className="text-neutral-600">No reservations for this date</p>
                     </div>
                   ) : (

@@ -324,4 +324,106 @@ router.patch('/:id/status', async (req, res) => {
   }
 });
 
+// Block an entire day by creating 'blocked' appointments for every free 30min slot
+router.post('/block-day', async (req, res) => {
+  try {
+    const { date } = req.body;
+    const normalizedDate = safeString(date, 20);
+
+    if (!DATE_REGEX.test(normalizedDate) || !isDateWithinAllowedRange(normalizedDate)) {
+      return res.status(400).json({ error: 'Invalid or out-of-range date' });
+    }
+
+    // Get business hours for that date
+    const businessHours = getBusinessHoursForDate(normalizedDate);
+    const startHour = businessHours.start;
+    const endHour = businessHours.end;
+    const totalSlots = (endHour - startHour) * 2; // 30min slots
+
+    const allAppointments = await db.getAll();
+    const existingForDate = allAppointments.filter(a => safeString(a.date) === normalizedDate && !['cancelled','canceled'].includes((a.status||'').toLowerCase()));
+
+    // Helper to check if a slot is occupied
+    const isSlotOccupied = (checkTime) => {
+      return existingForDate.some((booking) => {
+        const bookingStart = safeString(booking.time || '', 10);
+        if (!TIME_REGEX.test(bookingStart)) return false;
+        const bookingStartMinutes = parseMinutes(bookingStart);
+        const bookingDuration = getAppointmentDurationMinutes(booking);
+        const bookingEndMinutes = bookingStartMinutes + bookingDuration;
+
+        const checkMinutes = parseMinutes(checkTime);
+        return checkMinutes >= bookingStartMinutes && checkMinutes < bookingEndMinutes;
+      });
+    };
+
+    const created = [];
+    for (let i = 0; i < totalSlots; i++) {
+      const hour = startHour + Math.floor(i / 2);
+      const minutes = (i % 2) * 30;
+      const timeSlot = `${String(hour).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+
+      if (!isSlotOccupied(timeSlot)) {
+        const id = uuidv4();
+        const blocked = {
+          id,
+          name: 'Day Off',
+          customer_name: 'Day Off',
+          email: 'blocked@local',
+          phone: '0000000000',
+          service: 'blocked',
+          service_name: 'Day Off',
+          service_duration: 30,
+          service_price: 0,
+          addons: [],
+          addon_names: [],
+          addon_details: [],
+          total_duration: 30,
+          total_price: 0,
+          language: 'bg',
+          date: normalizedDate,
+          time: timeSlot,
+          notes: 'Blocked by admin for day off',
+          status: 'blocked',
+          created_at: new Date().toISOString()
+        };
+
+        await db.create(blocked);
+        created.push(blocked);
+      }
+    }
+
+    res.status(201).json({ createdCount: created.length, created });
+  } catch (error) {
+    console.error('Error blocking day:', error);
+    res.status(500).json({ error: 'Failed to block the day' });
+  }
+});
+
+// Unblock an entire day by removing appointments with status 'blocked'
+router.post('/unblock-day', async (req, res) => {
+  try {
+    const { date } = req.body;
+    const normalizedDate = safeString(date, 20);
+
+    if (!DATE_REGEX.test(normalizedDate) || !isDateWithinAllowedRange(normalizedDate)) {
+      return res.status(400).json({ error: 'Invalid or out-of-range date' });
+    }
+
+    const allAppointments = await db.getAll();
+    const toRemove = allAppointments.filter(a => safeString(a.date) === normalizedDate && safeString(a.status).toLowerCase() === 'blocked');
+
+    let removedCount = 0;
+    for (const appt of toRemove) {
+      const ok = await db.delete(appt.id);
+      if (ok) removedCount++;
+    }
+
+    res.json({ removedCount });
+  } catch (error) {
+    console.error('Error unblocking day:', error);
+    res.status(500).json({ error: 'Failed to unblock the day' });
+  }
+});
+
 export default router;

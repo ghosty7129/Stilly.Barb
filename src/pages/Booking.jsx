@@ -93,19 +93,22 @@ const Booking = () => {
     const start = startOfMonth(monthDate)
     const end = endOfMonth(monthDate)
     const today = startOfDay(new Date())
-    
+
     // If month is before today, adjust to start from today
     const adjustedStart = isBefore(start, today) ? today : start
-    
+
     let dates = eachDayOfInterval({
       start: adjustedStart,
       end: end
     })
-    
+
     // Filter to only valid booking dates within the 90-day window
-    const maxDate = addDays(new Date(), 90)
-    dates = dates.filter(date => isValidBookingDate(date) && !isBefore(date, new Date()) && !isBefore(maxDate, date))
-    
+    const maxDate = startOfDay(addDays(new Date(), 90))
+    dates = dates.filter(date => {
+      const d = startOfDay(date)
+      return isValidBookingDate(date) && !isBefore(d, today) && !isBefore(maxDate, d)
+    })
+
     return dates
   }
 
