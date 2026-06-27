@@ -63,6 +63,13 @@ const Booking = () => {
   const [currentMonthDate, setCurrentMonthDate] = useState(new Date())
   const [isSubmitting, setIsSubmitting] = useState(false)
 
+  const credentialsFilled = Boolean(
+    formData.name.trim() &&
+    formData.email.trim() &&
+    formData.phone.length === 10 &&
+    formData.service
+  )
+
   // Calculate total duration based on service + addons
   const calculateTotalDuration = () => {
     const selectedService = SERVICES.find(s => s.id === formData.service)
@@ -564,7 +571,16 @@ const Booking = () => {
                 </AnimatePresence>
               </div>
 
-              {/* Date Selection */}
+              {/* Date + Time Selection */}
+              <div className="relative">
+                {!credentialsFilled && (
+                  <div className="absolute inset-0 z-10 bg-white/85 backdrop-blur-[2px] flex items-center justify-center rounded-sm">
+                    <p className="text-neutral-500 text-sm font-medium text-center px-6">
+                      Моля, попълнете данните си и изберете услуга преди да изберете дата и час.
+                    </p>
+                  </div>
+                )}
+
               {/* Desktop: month view with navigation */}
               <div className="hidden md:block">
                 <h2 className="text-2xl font-semibold mb-6">{t('selectDate')}</h2>
@@ -817,6 +833,7 @@ const Booking = () => {
                   </div>
                 </motion.div>
               )}
+              </div>
 
               {/* Additional Notes */}
               <div>
