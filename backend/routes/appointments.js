@@ -62,7 +62,7 @@ const isDateWithinAllowedRange = (dateString) => {
   if (Number.isNaN(selected.getTime())) return false;
 
   const max = new Date(today);
-  max.setUTCDate(max.getUTCDate() + 60);
+  max.setUTCDate(max.getUTCDate() + 90);
 
   return selected >= today && selected <= max;
 };

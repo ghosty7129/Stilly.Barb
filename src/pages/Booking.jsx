@@ -61,6 +61,7 @@ const Booking = () => {
   const [chosenDateLabel, setChosenDateLabel] = useState('')
   const [chosenTimeLabel, setChosenTimeLabel] = useState('')
   const [currentMonthDate, setCurrentMonthDate] = useState(new Date())
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   // Calculate total duration based on service + addons
   const calculateTotalDuration = () => {
@@ -270,7 +271,9 @@ const Booking = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    
+
+    if (isSubmitting) return
+
     // Validate all required fields
     if (!formData.name || !formData.email || !formData.phone || !formData.service || !formData.date || !formData.time) {
       alert(t('fillAllFields'))
@@ -281,13 +284,15 @@ const Booking = () => {
       alert('Please confirm that you have read the Privacy Policy to continue.')
       return
     }
-    
+
     // Validate phone number is exactly 10 digits
     if (formData.phone.length !== 10) {
       alert('Phone number must be exactly 10 digits')
       return
     }
-    
+
+    setIsSubmitting(true)
+
     // Track analytics
     analytics.trackBooking(formData.service, formData.date)
 
@@ -318,7 +323,7 @@ const Booking = () => {
     const selectedServicePrice = selectedService?.price || 0
     const totalDuration = selectedServiceDuration + selectedAddonDetails.reduce((sum, addon) => sum + addon.duration, 0)
     const totalPrice = selectedServicePrice + selectedAddonDetails.reduce((sum, addon) => sum + addon.price, 0)
-    
+
     // Add booking via API
     const result = await addBooking({
       ...formData,
@@ -331,12 +336,13 @@ const Booking = () => {
       totalPrice,
       language
     })
-    
+
     if (!result.success) {
+      setIsSubmitting(false)
       alert(result.message || t('errorSavingReservation'))
       return
     }
-    
+
     // Persist booking for the confirmation page, then force a full page load.
     const confirmationBooking = result.booking || formData
     sessionStorage.setItem('latestBooking', JSON.stringify(confirmationBooking))
@@ -852,10 +858,10 @@ const Booking = () => {
               {/* Submit Button */}
               <button
                 type="submit"
-                className={`w-full btn-primary py-4 text-lg ${!formData.privacyAccepted ? 'opacity-60 cursor-not-allowed hover:scale-100' : ''}`}
-                disabled={!formData.privacyAccepted}
+                className={`w-full btn-primary py-4 text-lg ${!formData.privacyAccepted || isSubmitting ? 'opacity-60 cursor-not-allowed hover:scale-100' : ''}`}
+                disabled={!formData.privacyAccepted || isSubmitting}
               >
-                {t('confirmAppointment')}
+                {isSubmitting ? 'Запазване...' : t('confirmAppointment')}
               </button>
             </form>
           </motion.div>
