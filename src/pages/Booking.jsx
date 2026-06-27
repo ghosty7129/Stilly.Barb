@@ -88,6 +88,13 @@ const Booking = () => {
     return total
   }
 
+  const isAbsentDate = (date) => {
+    const year = date.getFullYear()
+    const month = date.getMonth() // 0-indexed; July = 6
+    const day = date.getDate()
+    return year === 2026 && month === 6 && day >= 10 && day <= 15
+  }
+
   // Generate dates for the current month view
   const generateDatesForMonth = (monthDate) => {
     const start = startOfMonth(monthDate)
@@ -591,11 +598,14 @@ const Booking = () => {
                     <button
                       key={date.toISOString()}
                       type="button"
-                      onClick={() => handleDateSelect(date)}
+                      onClick={() => isAbsentDate(date) ? null : handleDateSelect(date)}
+                      disabled={isAbsentDate(date)}
                       className={`p-3 rounded-sm border-2 transition-all ${
-                        selectedDate && isSameDay(date, selectedDate)
-                          ? 'border-accent-gold bg-accent-gold text-white'
-                          : 'border-neutral-300 hover:border-accent-gold/50'
+                        isAbsentDate(date)
+                          ? 'border-red-500 bg-red-50 text-red-500 cursor-not-allowed'
+                          : selectedDate && isSameDay(date, selectedDate)
+                            ? 'border-accent-gold bg-accent-gold text-white'
+                            : 'border-neutral-300 hover:border-accent-gold/50'
                       }`}
                     >
                       <div className="text-xs font-medium">{format(date, 'EEE')}</div>
@@ -676,18 +686,23 @@ const Booking = () => {
                               <button
                                 key={date.toISOString()}
                                 type="button"
-                                onClick={() => { handleDateSelect(date) }}
+                                onClick={() => { if (!isAbsentDate(date)) handleDateSelect(date) }}
+                                disabled={isAbsentDate(date)}
                                 className={`min-w-0 h-16 px-1 py-2 rounded-sm text-center flex flex-col items-center justify-center leading-tight ${
-                                  selectedDate && isSameDay(date, selectedDate)
-                                    ? 'bg-accent-gold text-white'
-                                    : 'bg-white border'
+                                  isAbsentDate(date)
+                                    ? 'bg-red-50 border border-red-500 text-red-500 cursor-not-allowed'
+                                    : selectedDate && isSameDay(date, selectedDate)
+                                      ? 'bg-accent-gold text-white'
+                                      : 'bg-white border'
                                 }`}
                               >
                                 <div className="font-bold text-base">{format(date, 'd')}</div>
                                 <div className={`text-xs ${
-                                  selectedDate && isSameDay(date, selectedDate)
-                                    ? 'text-white'
-                                    : 'text-neutral-500'
+                                  isAbsentDate(date)
+                                    ? 'text-red-400'
+                                    : selectedDate && isSameDay(date, selectedDate)
+                                      ? 'text-white'
+                                      : 'text-neutral-500'
                                 }`}>{format(date, 'EEE')}</div>
                               </button>
                             ))}
