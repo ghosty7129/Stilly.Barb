@@ -6,51 +6,160 @@
   * {
     @apply m-0 p-0 box-border;
   }
-  
+
+  /* No height:100% here — that turned #root into the scroll container, which
+     zeroed out window.scrollY and broke mobile URL-bar collapse. The viewport
+     itself owns the scroll now. */
   html {
     @apply scroll-smooth;
-    height: 100%;
     width: 100%;
+    overflow-x: hidden;
+    -webkit-text-size-adjust: 100%;
   }
 
   body {
-    @apply bg-white text-neutral-800 font-sans antialiased;
-    scroll-behavior: smooth;
-    height: 100%;
+    @apply bg-paper text-ink font-sans antialiased;
+    min-height: 100%;
     width: 100%;
     overflow-x: hidden;
+    letter-spacing: -0.011em;
+    font-feature-settings: 'ss01', 'cv11';
   }
 
   #root {
-    height: 100%;
     width: 100%;
-    overflow-x: hidden;
+  }
+
+  h1, h2, h3, h4 {
+    @apply font-display;
+    letter-spacing: -0.035em;
+  }
+
+  img, video, svg {
+    max-width: 100%;
+  }
+
+  ::selection {
+    background: #0a0a0a;
+    color: #ffffff;
   }
 }
 
 @layer components {
   .container-custom {
-    @apply max-w-7xl mx-auto px-6 sm:px-8 lg:px-12;
+    width: 100%;
+    max-width: 1400px;
+    margin-inline: auto;
+    padding-inline: clamp(20px, 4.5vw, 60px);
   }
 
-  .btn-primary {
-    @apply bg-primary text-white px-8 py-3 rounded-md font-medium 
-    hover:bg-neutral-800 transition-all duration-300 
-    hover:scale-105 active:scale-95;
+  /* ---------- Typography ---------- */
+  .eyebrow {
+    @apply text-[10px] sm:text-[11px] font-medium uppercase;
+    letter-spacing: 0.3em;
   }
 
-  .btn-secondary {
-    @apply border-2 border-primary text-primary px-8 py-3 rounded-sm font-medium 
-    hover:bg-primary hover:text-white transition-all duration-300;
+  /* Syne runs wide and Bulgarian words run long, so every display size is
+     tuned to fit a 320px viewport and falls back to breaking rather than
+     clipping if a single word still cannot fit. */
+  .display-hero {
+    @apply font-display font-extrabold;
+    font-size: clamp(1.9rem, 9.5vw, 6rem);
+    line-height: 0.92;
+    letter-spacing: -0.045em;
+    overflow-wrap: break-word;
   }
 
   .section-title {
-    @apply font-display text-4xl sm:text-5xl lg:text-6xl font-bold mb-6 
-    tracking-tight;
+    @apply font-display font-bold;
+    font-size: clamp(1.65rem, 5vw, 4rem);
+    line-height: 1;
+    letter-spacing: -0.04em;
+    overflow-wrap: break-word;
+  }
+
+  .section-title-sm {
+    @apply font-display font-bold;
+    font-size: clamp(1.35rem, 3.6vw, 2.5rem);
+    line-height: 1.08;
+    letter-spacing: -0.035em;
+    overflow-wrap: break-word;
   }
 
   .section-subtitle {
-    @apply text-lg sm:text-xl text-neutral-600 max-w-2xl;
+    @apply text-base sm:text-lg leading-relaxed text-neutral-500 max-w-2xl;
+  }
+
+  /* ---------- Buttons ---------- */
+  .btn-primary {
+    @apply inline-flex max-w-full items-center justify-center gap-2 rounded-full bg-ink px-5 py-3.5
+    text-center text-[11px] font-semibold uppercase tracking-wider2 text-white
+    transition-all duration-300 ease-editorial
+    hover:-translate-y-0.5 hover:bg-ink-raised hover:shadow-ink
+    active:translate-y-0 disabled:hover:translate-y-0
+    sm:gap-2.5 sm:px-8 sm:py-4 sm:text-[13px];
+  }
+
+  .btn-secondary {
+    @apply inline-flex max-w-full items-center justify-center gap-2 rounded-full border border-hairline-strong bg-transparent px-5 py-3.5
+    text-center text-[11px] font-semibold uppercase tracking-wider2 text-ink
+    transition-all duration-300 ease-editorial
+    hover:-translate-y-0.5 hover:border-ink hover:bg-ink hover:text-white
+    sm:gap-2.5 sm:px-8 sm:py-4 sm:text-[13px];
+  }
+
+  .btn-light {
+    @apply inline-flex max-w-full items-center justify-center gap-2 rounded-full bg-white px-5 py-3.5
+    text-center text-[11px] font-semibold uppercase tracking-wider2 text-ink
+    transition-all duration-300 ease-editorial
+    hover:-translate-y-0.5 hover:bg-white/90
+    sm:gap-2.5 sm:px-8 sm:py-4 sm:text-[13px];
+  }
+
+  .btn-ghost-light {
+    @apply inline-flex max-w-full items-center justify-center gap-2 rounded-full border border-hairline-bright bg-white/5 px-5 py-3.5
+    text-center text-[11px] font-semibold uppercase tracking-wider2 text-white backdrop-blur-sm
+    transition-all duration-300 ease-editorial
+    hover:-translate-y-0.5 hover:border-white hover:bg-white hover:text-ink
+    sm:gap-2.5 sm:px-8 sm:py-4 sm:text-[13px];
+  }
+
+  /* ---------- Rules & surfaces ---------- */
+  .rule {
+    @apply h-px w-full bg-hairline;
+  }
+
+  .rule-light {
+    @apply h-px w-full bg-hairline-light;
+  }
+
+  /* Hairline grid: children sit on a 1px background that shows through the gaps */
+  .hairline-grid {
+    @apply gap-px bg-hairline;
+  }
+
+  .hairline-grid-light {
+    @apply gap-px bg-hairline-light;
+  }
+
+  /* ---------- Form controls ---------- */
+  .field-label {
+    @apply mb-2.5 block text-[10px] font-medium uppercase tracking-eyebrow text-neutral-500;
+  }
+
+  .field-input {
+    @apply w-full rounded-none border-0 border-b border-hairline-strong bg-transparent px-0 py-3
+    text-base text-ink placeholder:text-neutral-400
+    transition-colors duration-300 focus:border-ink focus:outline-none;
+  }
+
+  .tile {
+    @apply relative flex cursor-pointer flex-col rounded-xl border border-hairline bg-white p-4
+    transition-all duration-300 ease-editorial hover:border-hairline-strong;
+  }
+
+  .tile-active {
+    @apply border-ink bg-ink text-white hover:border-ink;
   }
 }
 
@@ -61,6 +170,26 @@
 
   .hover-lift {
     @apply transition-transform duration-300 hover:-translate-y-2;
+  }
+
+  /* Fine film grain for dark photographic panels */
+  .grain::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.28;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.35'/%3E%3C/svg%3E");
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
   }
 }
 
@@ -74,10 +203,20 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #888;
-  border-radius: 5px;
+  background: #0a0a0a;
+  border: 3px solid #f1f1f1;
+  border-radius: 999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #555;
+  background: #333333;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

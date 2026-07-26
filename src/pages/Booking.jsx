@@ -15,7 +15,7 @@ const Booking = () => {
   const { language } = useLanguage()
   const t = (key) => getTranslation(language, key)
   const topRef = useRef(null)
-  
+
   // Scroll to top when component mounts
   useEffect(() => {
     // Use a small delay to ensure page is fully rendered
@@ -24,10 +24,10 @@ const Booking = () => {
         topRef.current.scrollIntoView({ behavior: 'auto', block: 'start' })
       }
     }, 50)
-    
+
     return () => clearTimeout(scrollTimer)
   }, [])
-  
+
   // Detect mobile viewport (match Tailwind's md breakpoint)
   useEffect(() => {
     const mq = window.matchMedia('(max-width: 767px)')
@@ -40,7 +40,7 @@ const Booking = () => {
       else mq.removeListener(update)
     }
   }, [])
-  
+
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -52,7 +52,7 @@ const Booking = () => {
     privacyAccepted: false,
     addons: [] // Array of addon IDs
   })
-  
+
   const [selectedDate, setSelectedDate] = useState(null)
   const [availableSlots, setAvailableSlots] = useState([])
   const [isMobile, setIsMobile] = useState(false)
@@ -74,7 +74,7 @@ const Booking = () => {
   const calculateTotalDuration = () => {
     const selectedService = SERVICES.find(s => s.id === formData.service)
     if (!selectedService) return 60 // default
-    
+
     let total = selectedService.duration
     formData.addons.forEach(addonId => {
       const addon = ADDONS.find(a => a.id === addonId)
@@ -87,7 +87,7 @@ const Booking = () => {
   const calculateTotalPrice = () => {
     const selectedService = SERVICES.find(s => s.id === formData.service)
     if (!selectedService) return 0
-    
+
     let total = selectedService.price
     formData.addons.forEach(addonId => {
       const addon = ADDONS.find(a => a.id === addonId)
@@ -137,7 +137,7 @@ const Booking = () => {
     const today = new Date()
     const newMonth = new Date(currentMonthDate.getFullYear(), currentMonthDate.getMonth() - 1, 1)
     // Don't allow going before current month
-    if (newMonth.getFullYear() > today.getFullYear() || 
+    if (newMonth.getFullYear() > today.getFullYear() ||
         (newMonth.getFullYear() === today.getFullYear() && newMonth.getMonth() >= today.getMonth())) {
       setCurrentMonthDate(newMonth)
     }
@@ -193,14 +193,14 @@ const Booking = () => {
 
   const handleServiceChange = (e) => {
     const newService = e.target.value
-    
+
     // Remove beard addon if switching to Beard service
-    const newAddons = newService === 'beard' 
+    const newAddons = newService === 'beard'
       ? formData.addons.filter(id => id !== 'beard-addon')
       : formData.addons
-    
+
     setFormData({ ...formData, service: newService, addons: newAddons, time: '' })
-    
+
     // Regenerate time slots if date is selected
     if (selectedDate) {
       const dateString = format(selectedDate, 'yyyy-MM-dd')
@@ -239,9 +239,9 @@ const Booking = () => {
     const newAddons = formData.addons.includes(addonId)
       ? formData.addons.filter(id => id !== addonId)
       : [...formData.addons, addonId]
-    
+
     setFormData({ ...formData, addons: newAddons, time: '' })
-    
+
     // Regenerate time slots if date is selected
     if (selectedDate) {
       const dateString = format(selectedDate, 'yyyy-MM-dd')
@@ -358,7 +358,7 @@ const Booking = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target
-    
+
     // Validate phone number - only allow digits and limit to 10
     if (name === 'phone') {
       const digitsOnly = value.replace(/\D/g, '')
@@ -370,37 +370,53 @@ const Booking = () => {
       }
       return
     }
-    
+
     setFormData({
       ...formData,
       [name]: value
     })
   }
 
+  const stepHeading = (index, title) => (
+    <div className="mb-7 flex items-center gap-3">
+      <span className="text-[10px] font-medium tracking-eyebrow text-neutral-400">
+        {String(index).padStart(2, '0')}
+      </span>
+      <span className="h-px w-6 bg-hairline-strong" />
+      <h2 className="section-title-sm text-ink">{title}</h2>
+    </div>
+  )
+
   return (
-    <div ref={topRef} className="min-h-screen bg-neutral-50 pt-28 sm:pt-24">
+    <div ref={topRef} className="min-h-screen bg-paper-soft pt-28 sm:pt-24">
       <Header />
 
       {/* Booking Form */}
-      <section className="py-16">
+      <section className="pb-20 pt-10 sm:pb-28 sm:pt-14">
         <div className="container-custom max-w-4xl">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
+            transition={{ duration: 0.7, ease: [0.2, 0.7, 0.2, 1] }}
           >
-            <h1 className="section-title text-center mb-4">{t('bookYourAppointment')}</h1>
-            <p className="text-center text-neutral-600 mb-12">
-              {t('selectYourPreferences')}
-            </p>
+            {/* Page head */}
+            <div className="mb-10 sm:mb-14">
+              <div className="flex items-center gap-3 text-neutral-400">
+                <span className="h-1.5 w-1.5 rotate-45 bg-ink" />
+                <span className="eyebrow text-neutral-500">{t('brandName')}</span>
+              </div>
+              <h1 className="section-title mt-5 text-ink">{t('bookYourAppointment')}</h1>
+              <p className="section-subtitle mt-5">{t('selectYourPreferences')}</p>
+            </div>
 
-            <form onSubmit={handleSubmit} className="bg-white rounded-sm shadow-lg p-8 space-y-8">
+            <form onSubmit={handleSubmit} className="overflow-hidden rounded-2xl border border-hairline bg-white shadow-card">
               {/* Personal Information */}
-              <div>
-                <h2 className="text-2xl font-semibold mb-6">{t('personalInformation')}</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="p-6 sm:p-9">
+                {stepHeading(1, t('personalInformation'))}
+
+                <div className="grid grid-cols-1 gap-x-8 gap-y-7 md:grid-cols-2">
                   <div>
-                    <label htmlFor="name" className="block text-sm font-medium mb-2">
+                    <label htmlFor="name" className="field-label">
                       Име и Фамилия
                     </label>
                     <input
@@ -410,13 +426,13 @@ const Booking = () => {
                       value={formData.name}
                       onChange={handleChange}
                       required
-                      className="w-full px-4 py-3 border border-neutral-300 rounded-sm focus:outline-none focus:border-accent-gold transition-colors"
+                      className="field-input"
                       placeholder={t('fullName')}
                     />
                   </div>
 
                   <div>
-                    <label htmlFor="email" className="block text-sm font-medium mb-2">
+                    <label htmlFor="email" className="field-label">
                       {t('email')} {t('requiredField')}
                     </label>
                     <input
@@ -426,13 +442,13 @@ const Booking = () => {
                       value={formData.email}
                       onChange={handleChange}
                       required
-                      className="w-full px-4 py-3 border border-neutral-300 rounded-sm focus:outline-none focus:border-accent-gold transition-colors"
+                      className="field-input"
                       placeholder="john@example.com"
                     />
                   </div>
 
                   <div className="md:col-span-2">
-                    <label htmlFor="phone" className="block text-sm font-medium mb-2">
+                    <label htmlFor="phone" className="field-label">
                       {t('phoneNumber')} {t('requiredField')}
                     </label>
                     <input
@@ -443,68 +459,101 @@ const Booking = () => {
                       onChange={handleChange}
                       required
                       maxLength="10"
-                      className="w-full px-4 py-3 border border-neutral-300 rounded-sm focus:outline-none focus:border-accent-gold transition-colors"
+                      className="field-input"
                       placeholder="0886462500"
                     />
                   </div>
                 </div>
               </div>
 
+              <div className="rule" />
+
               {/* Service Selection */}
-              <div>
-                <h2 className="text-2xl font-semibold mb-6">{t('selectService')}</h2>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                  {SERVICES.map((service) => (
-                    <label
-                      key={service.id}
-                      className={`relative border-2 rounded-sm p-3.5 sm:p-4 cursor-pointer transition-all ${
-                        formData.service === service.id
-                          ? 'border-accent-gold bg-accent-gold/5'
-                          : 'border-neutral-300 hover:border-accent-gold/50'
-                      }`}
-                    >
-                      <input
-                        type="radio"
-                        name="service"
-                        value={service.id}
-                        checked={formData.service === service.id}
-                        onChange={handleServiceChange}
-                        className="sr-only"
-                      />
-                      <div className="flex flex-col items-center text-center gap-1">
-                        <h3 className="font-semibold text-base sm:text-lg leading-snug">{service.name}</h3>
-                        <p className="text-xs sm:text-sm text-neutral-600">{service.duration} min</p>
-                        <span className="text-lg sm:text-xl font-bold text-accent-gold">€{service.price}</span>
-                      </div>
-                    </label>
-                  ))}
+              <div className="p-6 sm:p-9">
+                {stepHeading(2, t('selectService'))}
+
+                <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+                  {SERVICES.map((service) => {
+                    const isSelected = formData.service === service.id
+
+                    return (
+                      <label
+                        key={service.id}
+                        className={`group relative flex cursor-pointer flex-col justify-between gap-5 rounded-xl border p-5 transition-all duration-300 ease-editorial ${
+                          isSelected
+                            ? 'border-ink bg-ink text-white shadow-ink'
+                            : 'border-hairline bg-white hover:border-hairline-strong hover:-translate-y-0.5'
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name="service"
+                          value={service.id}
+                          checked={isSelected}
+                          onChange={handleServiceChange}
+                          className="sr-only"
+                        />
+
+                        <div className="flex items-start justify-between gap-3">
+                          <span className={`text-[10px] uppercase tracking-wider2 ${isSelected ? 'text-white/50' : 'text-neutral-400'}`}>
+                            {service.duration} min
+                          </span>
+                          <span
+                            className={`flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full border transition-colors ${
+                              isSelected ? 'border-white bg-white' : 'border-hairline-strong'
+                            }`}
+                          >
+                            {isSelected && (
+                              <svg className="h-3 w-3 text-ink" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                              </svg>
+                            )}
+                          </span>
+                        </div>
+
+                        <div>
+                          <h3 className={`font-display text-base font-semibold leading-snug sm:text-lg ${isSelected ? 'text-white' : 'text-ink'}`}>
+                            {service.name}
+                          </h3>
+                          <span className={`mt-2 block font-display text-xl font-bold ${isSelected ? 'text-white' : 'text-ink'}`}>
+                            €{service.price}
+                          </span>
+                        </div>
+                      </label>
+                    )
+                  })}
                 </div>
               </div>
 
+              <div className="rule" />
+
               {/* Add-ons Section */}
-              <div>
-                <h2 className="text-2xl font-semibold mb-6">{t('addons')}</h2>
-                <p className="text-neutral-600 mb-6">{t('addonsDescription')}</p>
-                <div className="space-y-3">
-                  {ADDONS.map((addon) => {
+              <div className="p-6 sm:p-9">
+                {stepHeading(3, t('addons'))}
+                <p className="-mt-3 mb-6 text-sm text-neutral-500">{t('addonsDescription')}</p>
+
+                <div className="overflow-hidden rounded-xl border border-hairline">
+                  {ADDONS.map((addon, index) => {
                     // Disable beard addon if Beard service is selected
                     const isDisabled = addon.id === 'beard-addon' && formData.service === 'beard'
                     const isChecked = formData.addons.includes(addon.id)
-                    
+
                     return (
                       <label
                         key={addon.id}
-                        className={`flex items-center justify-between p-4 sm:p-5 bg-white border-2 rounded-sm transition-all ${
-                          isDisabled 
-                            ? 'border-neutral-200 bg-neutral-50 cursor-not-allowed opacity-50' 
+                        className={`flex items-center justify-between gap-4 p-4 transition-colors duration-300 sm:p-5 ${
+                          index > 0 ? 'border-t border-hairline' : ''
+                        } ${
+                          isDisabled
+                            ? 'cursor-not-allowed bg-neutral-50 opacity-45'
                             : isChecked
-                            ? 'border-accent-gold shadow-md'
-                            : 'border-neutral-300 cursor-pointer hover:border-accent-gold/50 hover:shadow-sm'
+                              ? 'cursor-pointer bg-neutral-100'
+                              : 'cursor-pointer bg-white hover:bg-neutral-50'
                         }`}
                       >
-                        <div className="flex items-start space-x-3 flex-1">
+                        <div className="flex flex-1 items-center gap-4">
                           {/* Custom Checkbox */}
-                          <div className="relative flex-shrink-0 mt-0.5">
+                          <div className="relative flex-shrink-0">
                             <input
                               type="checkbox"
                               checked={isChecked}
@@ -512,13 +561,13 @@ const Booking = () => {
                               disabled={isDisabled}
                               className="sr-only"
                             />
-                            <div className={`w-5 h-5 sm:w-6 sm:h-6 rounded border-2 transition-all duration-300 ${
+                            <div className={`flex h-6 w-6 items-center justify-center rounded-md border transition-all duration-300 ${
                               isChecked
-                                ? 'bg-accent-gold border-accent-gold'
-                                : 'bg-white border-neutral-300'
+                                ? 'border-ink bg-ink'
+                                : 'border-hairline-strong bg-white'
                             }`}>
                               {isChecked && (
-                                <svg className="w-full h-full text-white p-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className="h-3.5 w-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <motion.path
                                     initial={{ pathLength: 0 }}
                                     animate={{ pathLength: 1 }}
@@ -532,88 +581,100 @@ const Booking = () => {
                               )}
                             </div>
                           </div>
+
                           <div className="flex-1">
-                            <h3 className="font-semibold text-base sm:text-lg leading-snug">{addon.name}</h3>
-                            <p className="text-xs sm:text-sm text-neutral-600">
+                            <h3 className="font-display text-base font-semibold leading-snug text-ink">{addon.name}</h3>
+                            <p className="mt-0.5 text-[11px] uppercase tracking-wide text-neutral-400">
                               {(addon.displayDuration || addon.duration) > 0
                                 ? `${addon.displayDuration || addon.duration} min`
                                 : t('noExtraTime')}
                             </p>
                           </div>
                         </div>
-                        <span className="text-base sm:text-lg font-bold text-accent-gold ml-3 flex-shrink-0">+€{addon.price}</span>
+
+                        <span className="flex-shrink-0 font-display text-base font-bold text-ink sm:text-lg">+€{addon.price}</span>
                       </label>
                     )
                   })}
                 </div>
+
                 <AnimatePresence>
                   {formData.addons.length > 0 && (
                     <motion.div
                       key="total-price"
-                      initial={{ opacity: 0, y: -10, scale: 0.95 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                      transition={{ duration: 0.3, ease: "easeOut" }}
-                      className="mt-6 p-4 bg-accent-gold/10 rounded-sm border border-accent-gold/30"
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ duration: 0.3, ease: 'easeOut' }}
+                      className="mt-5 flex items-center justify-between gap-4 rounded-xl bg-ink px-5 py-4 text-white"
                     >
-                      <motion.div 
-                        className="flex justify-between items-center text-lg font-semibold"
+                      <span className="eyebrow text-white/50">{t('totalPrice')}</span>
+                      <motion.span
                         key={calculateTotalPrice()}
                         initial={{ scale: 1 }}
-                        animate={{ scale: [1, 1.05, 1] }}
-                        transition={{ duration: 0.4, ease: "easeInOut" }}
+                        animate={{ scale: [1, 1.06, 1] }}
+                        transition={{ duration: 0.4, ease: 'easeInOut' }}
+                        className="font-display text-2xl font-bold"
                       >
-                        <span>{t('totalPrice')}:</span>
-                        <span className="text-accent-gold">€{calculateTotalPrice()}</span>
-                      </motion.div>
+                        €{calculateTotalPrice()}
+                      </motion.span>
                     </motion.div>
                   )}
                 </AnimatePresence>
               </div>
 
+              <div className="rule" />
+
               {/* Date + Time Selection */}
-              <div className="relative">
+              <div className="relative p-6 sm:p-9">
                 {!credentialsFilled && (
-                  <div className="absolute inset-0 z-10 bg-white/85 backdrop-blur-[2px] flex items-center justify-center rounded-sm">
-                    <p className="text-neutral-500 text-sm font-medium text-center px-6">
-                      Моля, попълнете данните си и изберете услуга преди да изберете дата и час.
-                    </p>
+                  <div className="absolute inset-0 z-10 flex items-center justify-center rounded-none bg-white/85 backdrop-blur-[3px]">
+                    <div className="mx-6 flex max-w-sm flex-col items-center gap-3 text-center">
+                      <span className="flex h-11 w-11 items-center justify-center rounded-full border border-hairline text-neutral-400">
+                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.6} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        </svg>
+                      </span>
+                      <p className="text-sm font-medium leading-relaxed text-neutral-500">
+                        Моля, попълнете данните си и изберете услуга преди да изберете дата и час.
+                      </p>
+                    </div>
                   </div>
                 )}
 
               {/* Desktop: month view with navigation */}
               <div className="hidden md:block">
-                <h2 className="text-2xl font-semibold mb-6">{t('selectDate')}</h2>
-                
+                {stepHeading(4, t('selectDate'))}
+
                 {/* Month Navigation */}
-                <div className="flex items-center justify-between mb-6 gap-4">
+                <div className="mb-6 flex items-center justify-between gap-4">
                   <button
                     type="button"
                     onClick={goToPreviousMonth}
                     disabled={!canGoBackward()}
-                    className="p-2 rounded-sm border-2 border-neutral-300 hover:border-accent-gold disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    className="flex h-10 w-10 items-center justify-center rounded-full border border-hairline-strong text-ink transition-all duration-300 ease-editorial hover:border-ink hover:bg-ink hover:text-white disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-ink"
                   >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M15 19l-7-7 7-7" />
                     </svg>
                   </button>
-                  
-                  <h3 className="text-lg font-semibold min-w-48 text-center">
+
+                  <h3 className="min-w-48 text-center font-display text-lg font-bold uppercase tracking-tight text-ink">
                     {format(currentMonthDate, 'MMMM yyyy')}
                   </h3>
-                  
+
                   <button
                     type="button"
                     onClick={goToNextMonth}
                     disabled={!canGoForward()}
-                    className="p-2 rounded-sm border-2 border-neutral-300 hover:border-accent-gold disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    className="flex h-10 w-10 items-center justify-center rounded-full border border-hairline-strong text-ink transition-all duration-300 ease-editorial hover:border-ink hover:bg-ink hover:text-white disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-ink"
                   >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M9 5l7 7-7 7" />
                     </svg>
                   </button>
                 </div>
-                
+
                 {/* Calendar Grid */}
                 <div className="grid grid-cols-7 gap-2">
                   {generateDatesForMonth(currentMonthDate).map((date) => (
@@ -622,34 +683,38 @@ const Booking = () => {
                       type="button"
                       onClick={() => isAbsentDate(date) ? null : handleDateSelect(date)}
                       disabled={isAbsentDate(date)}
-                      className={`p-3 rounded-sm border-2 transition-all ${
+                      className={`rounded-xl border p-3 transition-all duration-300 ease-editorial ${
                         isAbsentDate(date)
-                          ? 'border-red-500 bg-red-50 text-red-500 cursor-not-allowed'
+                          ? 'cursor-not-allowed border-red-200 bg-red-50 text-red-400 line-through'
                           : selectedDate && isSameDay(date, selectedDate)
-                            ? 'border-accent-gold bg-accent-gold text-white'
-                            : 'border-neutral-300 hover:border-accent-gold/50'
+                            ? 'border-ink bg-ink text-white shadow-ink'
+                            : 'border-hairline bg-white hover:-translate-y-0.5 hover:border-ink'
                       }`}
                     >
-                      <div className="text-xs font-medium">{format(date, 'EEE')}</div>
-                      <div className="text-lg font-bold">{format(date, 'd')}</div>
-                      <div className="text-xs">{format(date, 'MMM')}</div>
+                      <div className={`text-[10px] uppercase tracking-wider2 ${
+                        selectedDate && isSameDay(date, selectedDate) ? 'text-white/55' : 'text-neutral-400'
+                      }`}>{format(date, 'EEE')}</div>
+                      <div className="mt-0.5 font-display text-lg font-bold">{format(date, 'd')}</div>
+                      <div className={`text-[10px] uppercase tracking-wider2 ${
+                        selectedDate && isSameDay(date, selectedDate) ? 'text-white/55' : 'text-neutral-400'
+                      }`}>{format(date, 'MMM')}</div>
                     </button>
                   ))}
                 </div>
               </div>
 
               {/* Mobile: buttons that toggle pickers */}
-              <div className="md:hidden space-y-4">
+              <div className="space-y-4 md:hidden">
                 {/* Date Section */}
                 <div>
-                  <h2 className="text-2xl font-semibold mb-4">{t('selectDate')}</h2>
+                  {stepHeading(4, t('selectDate'))}
                   <div className="space-y-2">
                     {chosenDateLabel ? (
-                      <div className="flex items-center justify-between bg-white p-3 rounded-sm border">
-                        <div className="text-base font-semibold text-neutral-900">{chosenDateLabel}</div>
+                      <div className="flex items-center justify-between rounded-xl border border-ink bg-ink p-4 text-white">
+                        <div className="font-display text-base font-semibold">{chosenDateLabel}</div>
                         <button
                           type="button"
-                          className="text-sm text-accent-gold hover:underline ml-2 flex-shrink-0"
+                          className="ml-2 flex-shrink-0 text-[10px] uppercase tracking-eyebrow text-white/60 underline-offset-4 hover:text-white hover:underline"
                           onClick={() => setShowDatePicker(true)}
                         >
                           {t('selectDate')}
@@ -659,9 +724,12 @@ const Booking = () => {
                       <button
                         type="button"
                         onClick={() => { setShowDatePicker(true); setShowTimePicker(false) }}
-                        className="w-full py-3 bg-white border rounded-sm text-left px-4 font-semibold"
+                        className="flex w-full items-center justify-between rounded-xl border border-hairline bg-white px-4 py-4 text-left font-display text-base font-semibold text-ink"
                       >
                         {t('selectDate')}
+                        <svg className="h-4 w-4 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M19 9l-7 7-7-7" />
+                        </svg>
                       </button>
                     )}
 
@@ -672,59 +740,59 @@ const Booking = () => {
                           animate={{ opacity: 1, height: 'auto' }}
                           exit={{ opacity: 0, height: 0 }}
                           transition={{ duration: 0.25 }}
-                          className="overflow-hidden bg-white p-4 rounded-sm border w-full"
+                          className="w-full overflow-hidden rounded-xl border border-hairline bg-white p-4"
                         >
                           {/* Mobile Month Navigation */}
-                          <div className="flex items-center justify-between mb-4 gap-2">
+                          <div className="mb-4 flex items-center justify-between gap-2">
                             <button
                               type="button"
                               onClick={goToPreviousMonth}
                               disabled={!canGoBackward()}
-                              className="p-1.5 rounded-sm border border-neutral-300 hover:border-accent-gold disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                              className="flex h-9 w-9 items-center justify-center rounded-full border border-hairline text-ink transition-colors disabled:cursor-not-allowed disabled:opacity-30"
                             >
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M15 19l-7-7 7-7" />
                               </svg>
                             </button>
-                            
-                            <h4 className="text-sm font-semibold flex-1 text-center">
+
+                            <h4 className="flex-1 text-center font-display text-sm font-bold uppercase tracking-wider2 text-ink">
                               {format(currentMonthDate, 'MMM yyyy')}
                             </h4>
-                            
+
                             <button
                               type="button"
                               onClick={goToNextMonth}
                               disabled={!canGoForward()}
-                              className="p-1.5 rounded-sm border border-neutral-300 hover:border-accent-gold disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                              className="flex h-9 w-9 items-center justify-center rounded-full border border-hairline text-ink transition-colors disabled:cursor-not-allowed disabled:opacity-30"
                             >
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M9 5l7 7-7 7" />
                               </svg>
                             </button>
                           </div>
 
-                          <div className="grid grid-cols-5 gap-3 max-h-64 overflow-y-auto">
+                          <div className="grid max-h-64 grid-cols-5 gap-2 overflow-y-auto">
                             {generateDatesForMonth(currentMonthDate).map((date) => (
                               <button
                                 key={date.toISOString()}
                                 type="button"
                                 onClick={() => { if (!isAbsentDate(date)) handleDateSelect(date) }}
                                 disabled={isAbsentDate(date)}
-                                className={`min-w-0 h-16 px-1 py-2 rounded-sm text-center flex flex-col items-center justify-center leading-tight ${
+                                className={`flex h-16 min-w-0 flex-col items-center justify-center rounded-lg px-1 py-2 text-center leading-tight transition-colors ${
                                   isAbsentDate(date)
-                                    ? 'bg-red-50 border border-red-500 text-red-500 cursor-not-allowed'
+                                    ? 'cursor-not-allowed border border-red-200 bg-red-50 text-red-400 line-through'
                                     : selectedDate && isSameDay(date, selectedDate)
-                                      ? 'bg-accent-gold text-white'
-                                      : 'bg-white border'
+                                      ? 'bg-ink text-white'
+                                      : 'border border-hairline bg-white text-ink'
                                 }`}
                               >
-                                <div className="font-bold text-base">{format(date, 'd')}</div>
-                                <div className={`text-xs ${
+                                <div className="font-display text-base font-bold">{format(date, 'd')}</div>
+                                <div className={`text-[10px] uppercase tracking-wider2 ${
                                   isAbsentDate(date)
-                                    ? 'text-red-400'
+                                    ? 'text-red-300'
                                     : selectedDate && isSameDay(date, selectedDate)
-                                      ? 'text-white'
-                                      : 'text-neutral-500'
+                                      ? 'text-white/60'
+                                      : 'text-neutral-400'
                                 }`}>{format(date, 'EEE')}</div>
                               </button>
                             ))}
@@ -746,11 +814,11 @@ const Booking = () => {
                     >
                       <div className="space-y-2">
                         {chosenTimeLabel ? (
-                          <div className="flex items-center justify-between bg-white p-3 rounded-sm border">
-                            <div className="text-base font-semibold text-neutral-900">{chosenTimeLabel}</div>
+                          <div className="flex items-center justify-between rounded-xl border border-ink bg-ink p-4 text-white">
+                            <div className="font-display text-base font-semibold">{chosenTimeLabel}</div>
                             <button
                               type="button"
-                              className="text-sm text-accent-gold hover:underline ml-2 flex-shrink-0"
+                              className="ml-2 flex-shrink-0 text-[10px] uppercase tracking-eyebrow text-white/60 underline-offset-4 hover:text-white hover:underline"
                               onClick={() => setShowTimePicker(true)}
                             >
                               {t('selectTime')}
@@ -760,9 +828,12 @@ const Booking = () => {
                           <button
                             type="button"
                             onClick={() => { setShowTimePicker(true); setShowDatePicker(false) }}
-                            className="w-full py-3 bg-white border rounded-sm text-left px-4 font-semibold"
+                            className="flex w-full items-center justify-between rounded-xl border border-hairline bg-white px-4 py-4 text-left font-display text-base font-semibold text-ink"
                           >
                             {t('selectTime')}
+                            <svg className="h-4 w-4 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M19 9l-7 7-7-7" />
+                            </svg>
                           </button>
                         )}
 
@@ -773,21 +844,21 @@ const Booking = () => {
                               animate={{ opacity: 1, height: 'auto' }}
                               exit={{ opacity: 0, height: 0 }}
                               transition={{ duration: 0.25 }}
-                              className="overflow-y-auto overflow-x-hidden max-h-96 bg-white p-4 rounded-sm border w-full"
+                              className="max-h-96 w-full overflow-y-auto overflow-x-hidden rounded-xl border border-hairline bg-white p-4"
                             >
-                              <div className="grid grid-cols-3 gap-3">
+                              <div className="grid grid-cols-3 gap-2">
                                 {availableSlots.map((slot) => (
                                   <button
                                     key={slot.time}
                                     type="button"
                                     onClick={() => { handleTimeSelect(slot.time) }}
                                     disabled={!slot.available}
-                                    className={`min-w-0 h-12 px-1 rounded-sm text-xs font-medium whitespace-nowrap flex items-center justify-center text-center ${
+                                    className={`flex h-12 min-w-0 items-center justify-center whitespace-nowrap rounded-lg px-1 text-center text-xs font-semibold transition-colors ${
                                       formData.time === slot.time
-                                        ? 'bg-accent-gold text-white'
+                                        ? 'bg-ink text-white'
                                         : slot.available
-                                        ? 'bg-white border'
-                                        : 'bg-neutral-100 text-neutral-400'
+                                        ? 'border border-hairline bg-white text-ink'
+                                        : 'bg-neutral-100 text-neutral-300 line-through'
                                     }`}
                                   >
                                     {formatTime(slot.time)}
@@ -811,20 +882,22 @@ const Booking = () => {
                   transition={{ duration: 0.3 }}
                   className="hidden md:block"
                 >
-                  <h2 className="text-2xl font-semibold mb-6">{t('selectTime')}</h2>
-                  <div className="grid grid-cols-3 md:grid-cols-5 gap-3">
+                  <div className="mt-10">
+                    {stepHeading(5, t('selectTime'))}
+                  </div>
+                  <div className="grid grid-cols-3 gap-2.5 md:grid-cols-5">
                     {availableSlots.map((slot) => (
                       <button
                         key={slot.time}
                         type="button"
                         onClick={() => handleTimeSelect(slot.time)}
                         disabled={!slot.available}
-                        className={`py-3 px-4 rounded-sm border-2 font-medium transition-all ${
+                        className={`rounded-full border px-4 py-3 text-sm font-semibold transition-all duration-300 ease-editorial ${
                           formData.time === slot.time
-                            ? 'border-accent-gold bg-accent-gold text-white'
+                            ? 'border-ink bg-ink text-white shadow-ink'
                             : slot.available
-                            ? 'border-neutral-300 hover:border-accent-gold/50'
-                            : 'border-neutral-200 bg-neutral-100 text-neutral-400 cursor-not-allowed'
+                            ? 'border-hairline bg-white text-ink hover:-translate-y-0.5 hover:border-ink'
+                            : 'cursor-not-allowed border-transparent bg-neutral-100 text-neutral-300 line-through'
                         }`}
                       >
                         {formatTime(slot.time)}
@@ -835,51 +908,60 @@ const Booking = () => {
               )}
               </div>
 
-              {/* Additional Notes */}
-              <div>
-                <label htmlFor="notes" className="block text-sm font-medium mb-2">
-                  {t('additionalNotes')}
-                </label>
-                <textarea
-                  id="notes"
-                  name="notes"
-                  value={formData.notes}
-                  onChange={handleChange}
-                  rows={4}
-                  className="w-full px-4 py-3 border border-neutral-300 rounded-sm focus:outline-none focus:border-accent-gold transition-colors resize-none"
-                  placeholder={t('optionalNotes')}
-                />
-              </div>
+              <div className="rule" />
 
-              {/* Privacy Policy Consent */}
-              <div className="rounded-sm border border-neutral-300 bg-neutral-50 p-3 sm:p-5">
-                <label className="flex items-start gap-2 sm:gap-3 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    name="privacyAccepted"
-                    checked={formData.privacyAccepted}
-                    onChange={(e) => setFormData({ ...formData, privacyAccepted: e.target.checked })}
-                    required
-                    className="mt-0.5 h-4 w-4 shrink-0 rounded border-neutral-300 text-accent-gold focus:ring-accent-gold"
+              {/* Additional Notes + consent + submit */}
+              <div className="space-y-8 p-6 sm:p-9">
+                <div>
+                  <label htmlFor="notes" className="field-label">
+                    {t('additionalNotes')}
+                  </label>
+                  <textarea
+                    id="notes"
+                    name="notes"
+                    value={formData.notes}
+                    onChange={handleChange}
+                    rows={4}
+                    className="w-full resize-none rounded-xl border border-hairline bg-paper-soft px-4 py-3.5 text-base text-ink transition-colors duration-300 placeholder:text-neutral-400 focus:border-ink focus:outline-none"
+                    placeholder={t('optionalNotes')}
                   />
-                  <span className="text-xs sm:text-sm text-neutral-700 leading-snug sm:leading-relaxed">
-                    Запознат/а съм с{' '}
-                    <Link to="/privacy-policy" className="font-semibold text-accent-gold hover:underline">
-                      Политиката за поверителност
-                    </Link>{' '}
-                    и съм съгласен/съгласна с нея, за да завърша резервацията си.
-                  </span>
-                </label>
-              </div>
+                </div>
 
-              {/* Submit Button */}
-              <button
-                type="submit"
-                className={`w-full btn-primary py-4 text-lg ${!formData.privacyAccepted || isSubmitting ? 'opacity-60 cursor-not-allowed hover:scale-100' : ''}`}
-                disabled={!formData.privacyAccepted || isSubmitting}
-              >
-                {isSubmitting ? 'Запазване...' : t('confirmAppointment')}
-              </button>
+                {/* Privacy Policy Consent */}
+                <div className="rounded-xl border border-hairline bg-paper-soft p-4 sm:p-5">
+                  <label className="flex cursor-pointer items-start gap-3">
+                    <input
+                      type="checkbox"
+                      name="privacyAccepted"
+                      checked={formData.privacyAccepted}
+                      onChange={(e) => setFormData({ ...formData, privacyAccepted: e.target.checked })}
+                      required
+                      className="mt-0.5 h-4 w-4 shrink-0 rounded border-neutral-300 text-ink accent-ink focus:ring-ink"
+                    />
+                    <span className="text-xs leading-relaxed text-neutral-600 sm:text-sm">
+                      Запознат/а съм с{' '}
+                      <Link to="/privacy-policy" className="font-semibold text-ink underline underline-offset-4 hover:opacity-70">
+                        Политиката за поверителност
+                      </Link>{' '}
+                      и съм съгласен/съгласна с нея, за да завърша резервацията си.
+                    </span>
+                  </label>
+                </div>
+
+                {/* Submit Button */}
+                <button
+                  type="submit"
+                  className={`btn-primary w-full py-5 ${!formData.privacyAccepted || isSubmitting ? 'cursor-not-allowed opacity-40' : ''}`}
+                  disabled={!formData.privacyAccepted || isSubmitting}
+                >
+                  {isSubmitting ? 'Запазване...' : t('confirmAppointment')}
+                  {!isSubmitting && (
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M5 12h14m0 0l-6-6m6 6l-6 6" />
+                    </svg>
+                  )}
+                </button>
+              </div>
             </form>
           </motion.div>
         </div>

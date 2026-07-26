@@ -1,6 +1,6 @@
-import { motion } from 'framer-motion'
 import { useLanguage } from '../i18n/LanguageContext'
 import { getTranslation } from '../i18n/translations'
+import Reveal from './Reveal'
 
 const splitParagraphs = (text) => {
   if (!text) return []
@@ -17,57 +17,81 @@ const About = () => {
     ...splitParagraphs(t('aboutParagraph3')),
   ].filter(Boolean)
 
-  const imageInsertIndex = Math.min(
-    3,
-    Math.max(0, aboutParagraphs.findIndex((paragraph) => paragraph.includes('Всеки човек е различен')) + 1 || 3)
-  )
-
-  const topParagraphs = aboutParagraphs.slice(0, imageInsertIndex)
-  const bottomParagraphs = aboutParagraphs.slice(imageInsertIndex)
+  const [leadParagraph, ...restParagraphs] = aboutParagraphs
 
   return (
-    <section id="about" className="py-24 bg-white">
+    <section id="about" className="relative overflow-hidden bg-paper py-20 sm:py-28 lg:py-32">
       <div className="container-custom">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-          <motion.div
-            initial={{ opacity: 0, x: -50 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-            className="lg:col-start-1"
-          >
-            <h2 className="section-title mb-6">{t('aboutHeadingShort')}</h2>
+        {/* Section head */}
+        <Reveal>
+          <div className="flex items-center gap-3 text-neutral-400">
+            <span className="eyebrow">02</span>
+            <span className="h-px w-10 bg-hairline-strong" />
+            <span className="eyebrow text-neutral-500">{t('about')}</span>
+          </div>
+        </Reveal>
 
-            <div className="space-y-6 text-lg text-neutral-600 leading-relaxed">
-              {topParagraphs.map((paragraph, index) => (
-                <p key={`top-${index}`}>{paragraph}</p>
+        <div className="mt-8 grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-16">
+          {/* Left rail: heading + lead */}
+          <div className="lg:col-span-7">
+            <Reveal delay={0.05}>
+              <h2 className="section-title text-ink">{t('aboutHeadingShort')}</h2>
+            </Reveal>
+
+            <Reveal delay={0.1}>
+              <p className="mt-8 border-l border-ink pl-6 text-lg font-medium leading-relaxed text-ink sm:text-xl">
+                {leadParagraph}
+              </p>
+            </Reveal>
+
+            <div className="mt-10 space-y-6">
+              {restParagraphs.map((paragraph, index) => (
+                <Reveal key={`about-p-${index}`} delay={0.06 * index} as="p" className="text-base leading-relaxed text-neutral-500 sm:text-[17px]">
+                  {paragraph}
+                </Reveal>
               ))}
             </div>
-          </motion.div>
 
-          <div className="relative lg:col-start-2 lg:row-span-2">
-            <div className="aspect-[4/5] bg-neutral-200 rounded-sm overflow-hidden">
-              <img
-                src={`${import.meta.env.VITE_API_URL}/images/information-image/Unusual-4.jpg`}
-                alt="Barbershop interior"
-                className="w-full h-full object-cover"
-              />
-            </div>
-
-            <div className="absolute -bottom-6 -right-6 w-48 h-48 border-4 border-accent-gold rounded-sm -z-10" />
+            {/* Signature rail */}
+            <Reveal delay={0.1} className="mt-12">
+              <div className="flex flex-wrap items-center gap-x-8 gap-y-4 border-t border-hairline pt-6">
+                <span className="eyebrow text-neutral-400">{t('brandName')}</span>
+                <span className="eyebrow text-neutral-400">{t('addressLine2')}</span>
+                <a
+                  href="https://www.instagram.com/stilly.barb/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="eyebrow text-ink underline-offset-4 transition-opacity hover:opacity-60"
+                >
+                  @stilly.barb
+                </a>
+              </div>
+            </Reveal>
           </div>
 
-          <motion.div
-            initial={{ opacity: 0, x: -50 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-            className="space-y-6 text-lg text-neutral-600 leading-relaxed lg:col-start-1"
-          >
-            {bottomParagraphs.map((paragraph, index) => (
-              <p key={`bottom-${index}`}>{paragraph}</p>
-            ))}
-          </motion.div>
+          {/* Right rail: sticky portrait */}
+          <div className="lg:col-span-5">
+            <Reveal delay={0.12} className="lg:sticky lg:top-28">
+              <figure className="relative">
+                <div className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-neutral-100">
+                  <img
+                    src={`${import.meta.env.VITE_API_URL}/images/information-image/Unusual-4.jpg`}
+                    alt="Barbershop interior"
+                    className="h-full w-full object-cover transition-transform duration-[1200ms] ease-editorial hover:scale-[1.04]"
+                  />
+                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink/25 to-transparent" />
+                </div>
+
+                {/* Offset hairline frame */}
+                <div className="pointer-events-none absolute -bottom-4 -right-4 -z-10 h-40 w-40 rounded-2xl border border-hairline-strong sm:h-56 sm:w-56" />
+
+                <figcaption className="mt-5 flex items-center justify-between text-[10px] uppercase tracking-eyebrow text-neutral-400">
+                  <span>{t('brandName')} — Studio</span>
+                  <span>{t('addressLine1')}</span>
+                </figcaption>
+              </figure>
+            </Reveal>
+          </div>
         </div>
       </div>
     </section>
