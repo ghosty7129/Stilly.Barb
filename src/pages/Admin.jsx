@@ -180,30 +180,38 @@ const Admin = () => {
     }
   }, [currentMonthDate])
 
-  // Reservations grouped by the day the customer actually booked them.
+  // Visits from the last N days: appointments dated inside the window, newest
+  // day first, with each day's customers in the order they came in.
   const recentGroups = useMemo(() => {
-    const cutoff = startOfDay(subDays(new Date(), RECENT_DAYS - 1))
+    const today = startOfDay(new Date())
+    const cutoff = subDays(today, RECENT_DAYS - 1)
 
-    const entries = bookings
-      .filter(isRealBooking)
-      .map(booking => ({ booking, createdAt: booking.created_at ? new Date(booking.created_at) : null }))
-      .filter(({ createdAt }) => createdAt && !Number.isNaN(createdAt.getTime()) && !isBefore(createdAt, cutoff))
-      .sort((a, b) => b.createdAt - a.createdAt)
+    const visits = bookings.filter((booking) => {
+      if (!isRealBooking(booking) || !booking.date) return false
+      const date = startOfDay(new Date(`${booking.date}T00:00:00`))
+      if (Number.isNaN(date.getTime())) return false
+      return !isBefore(date, cutoff) && !isBefore(today, date)
+    })
 
-    return entries.reduce((groups, entry) => {
-      const key = format(entry.createdAt, 'yyyy-MM-dd')
-      const current = groups[groups.length - 1]
+    const byDate = visits.reduce((map, booking) => {
+      const day = map.get(booking.date) || []
+      day.push(booking)
+      map.set(booking.date, day)
+      return map
+    }, new Map())
 
-      if (current && current.key === key) current.items.push(entry)
-      else groups.push({ key, date: entry.createdAt, items: [entry] })
-
-      return groups
-    }, [])
+    return [...byDate.entries()]
+      .sort(([a], [b]) => b.localeCompare(a))
+      .map(([key, items]) => ({
+        key,
+        date: new Date(`${key}T00:00:00`),
+        items: items.sort((a, b) => a.time.localeCompare(b.time))
+      }))
   }, [bookings])
 
   const recentCount = recentGroups.reduce((total, group) => total + group.items.length, 0)
 
-  const createdDayLabel = (date) => {
+  const visitDayLabel = (date) => {
     if (isToday(date)) return 'Today'
     if (isYesterday(date)) return 'Yesterday'
     return format(date, 'EEEE, MMM d')
@@ -452,10 +460,10 @@ const Admin = () => {
               <div className="rounded-2xl border border-hairline bg-white p-4 shadow-card sm:p-8">
                 <div className="mb-7 flex flex-wrap items-center gap-x-3 gap-y-2">
                   <span className="h-1.5 w-1.5 rotate-45 bg-ink" />
-                  <h2 className="eyebrow text-neutral-500">Booked in the last {RECENT_DAYS} days</h2>
+                  <h2 className="eyebrow text-neutral-500">Visits in the last {RECENT_DAYS} days</h2>
                   <span className="hidden h-px min-w-[2rem] flex-1 bg-hairline sm:block" />
                   <span className="text-[10px] uppercase tracking-eyebrow text-neutral-400">
-                    {recentCount} {recentCount === 1 ? 'reservation' : 'reservations'}
+                    {recentCount} {recentCount === 1 ? 'visit' : 'visits'}
                   </span>
                 </div>
 
@@ -466,7 +474,7 @@ const Admin = () => {
                       alt="Unusual Stilly Barb"
                       className="mb-5 h-12 w-auto object-contain opacity-25"
                     />
-                    <p className="text-sm text-neutral-400">No reservations were made in the last {RECENT_DAYS} days</p>
+                    <p className="text-sm text-neutral-400">No visits in the last {RECENT_DAYS} days</p>
                   </div>
                 ) : (
                   <div className="space-y-9">
@@ -474,7 +482,7 @@ const Admin = () => {
                       <div key={group.key}>
                         <div className="mb-4 flex items-center gap-3">
                           <h3 className="font-display text-sm font-bold uppercase tracking-tight text-ink">
-                            {createdDayLabel(group.date)}
+                            {visitDayLabel(group.date)}
                           </h3>
                           <span className="h-px flex-1 bg-hairline" />
                           <span className="text-[10px] uppercase tracking-eyebrow text-neutral-400">
@@ -483,8 +491,9 @@ const Admin = () => {
                         </div>
 
                         <div className="space-y-2.5">
-                          {group.items.map(({ booking, createdAt }, index) => {
-                            const appointment = splitTime(booking.time)
+                          {group.items.map((booking, index) => {
+                            const { clock, meridiem } = splitTime(booking.time)
+                            const addonNames = getAddonNames(booking)
 
                             return (
                               <motion.div
@@ -494,12 +503,12 @@ const Admin = () => {
                                 transition={{ delay: Math.min(groupIndex * 0.05 + index * 0.03, 0.4) }}
                                 className="grid grid-cols-[auto_1fr] items-start gap-x-4 gap-y-4 rounded-xl border border-hairline p-4 transition-colors duration-300 ease-editorial hover:border-ink sm:grid-cols-[auto_1fr_auto] sm:items-center sm:gap-5 sm:p-5"
                               >
-                                <span className="flex h-14 w-16 flex-shrink-0 flex-col items-center justify-center rounded-xl border border-hairline bg-paper-soft text-ink">
+                                <span className="flex h-14 w-16 flex-shrink-0 flex-col items-center justify-center rounded-xl bg-ink text-white">
                                   <span className="font-display text-[15px] font-bold leading-none">
-                                    {format(createdAt, 'HH:mm')}
+                                    {clock}
                                   </span>
-                                  <span className="mt-1 text-[9px] font-medium uppercase tracking-wider2 text-neutral-400">
-                                    Booked
+                                  <span className="mt-1 text-[9px] font-medium uppercase tracking-wider2 text-white/50">
+                                    {meridiem}
                                   </span>
                                 </span>
 
@@ -508,12 +517,14 @@ const Admin = () => {
                                     {booking.name || booking.customer_name}
                                   </h4>
                                   <p className="mt-1 text-sm text-neutral-500">{booking.phone}</p>
-                                  <p className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] uppercase tracking-wider2 text-neutral-400">
-                                    <span className="text-neutral-600">{booking.service_name || getServiceName(booking.service)}</span>
-                                    <span className="text-neutral-300">/</span>
-                                    <span>{format(new Date(`${booking.date}T00:00:00`), 'EEE, MMM d')}</span>
-                                    <span className="text-neutral-300">/</span>
-                                    <span>{appointment.clock} {appointment.meridiem}</span>
+                                  <p className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] uppercase tracking-wider2 text-neutral-500">
+                                    <span>{booking.service_name || getServiceName(booking.service)}</span>
+                                    {addonNames.length > 0 && (
+                                      <>
+                                        <span className="text-neutral-300">+</span>
+                                        <span className="text-neutral-400">{addonNames.join(', ')}</span>
+                                      </>
+                                    )}
                                   </p>
                                 </div>
 
