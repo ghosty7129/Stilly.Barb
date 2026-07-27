@@ -94,4 +94,56 @@ export const update = async (id, updates) => {
   return rows[0] ? mapRow(rows[0]) : null
 }
 
-export default { getAll, getById, create, delete: remove, update }
+// ---------------------------------------------------------------------------
+// Vacations
+// ---------------------------------------------------------------------------
+
+const mapVacation = (row) => ({
+  id: row.id,
+  startDate: row.start_date,
+  endDate: row.end_date,
+  announce: Boolean(row.announce),
+  messageBg: row.message_bg || '',
+  messageEn: row.message_en || '',
+  createdAt: row.created_at
+})
+
+export const getAllVacations = async () => {
+  const { rows } = await pool.query('SELECT * FROM vacations ORDER BY start_date ASC')
+  return rows.map(mapVacation)
+}
+
+export const createVacation = async (vacation) => {
+  const query = `INSERT INTO vacations(
+    id, start_date, end_date, announce, message_bg, message_en, created_at
+  ) VALUES($1,$2,$3,$4,$5,$6,$7) RETURNING *`
+
+  const values = [
+    vacation.id,
+    vacation.startDate,
+    vacation.endDate,
+    Boolean(vacation.announce),
+    vacation.messageBg || '',
+    vacation.messageEn || '',
+    vacation.createdAt || new Date().toISOString()
+  ]
+
+  const { rows } = await pool.query(query, values)
+  return mapVacation(rows[0])
+}
+
+export const removeVacation = async (id) => {
+  const { rowCount } = await pool.query('DELETE FROM vacations WHERE id = $1', [id])
+  return rowCount > 0
+}
+
+export default {
+  getAll,
+  getById,
+  create,
+  delete: remove,
+  update,
+  getAllVacations,
+  createVacation,
+  removeVacation
+}

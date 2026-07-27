@@ -6,12 +6,14 @@ import useBookingStore from '../store/bookingStore'
 import { SERVICES, ADDONS, formatTime, isValidBookingDate } from '../services/appointmentService'
 import { useLanguage } from '../i18n/LanguageContext'
 import { getTranslation } from '../i18n/translations'
+import FinancePanel from '../components/admin/FinancePanel'
+import VacationPanel from '../components/admin/VacationPanel'
 
 const RECENT_DAYS = 10
 const WEEKDAY_LABELS = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
 
 const Admin = () => {
-  const { bookings, removeBooking, loadBookings } = useBookingStore()
+  const { bookings, removeBooking, loadBookings, vacations, loadVacations, addVacation, removeVacation } = useBookingStore()
   const { language } = useLanguage()
   const t = (key) => getTranslation(language, key)
   const apiUrl = import.meta.env.VITE_API_URL
@@ -30,8 +32,9 @@ const Admin = () => {
   useEffect(() => {
     if (isAuthenticated) {
       loadBookings()
+      loadVacations()
     }
-  }, [isAuthenticated, loadBookings])
+  }, [isAuthenticated, loadBookings, loadVacations])
 
   const handleLogin = async (e) => {
     e.preventDefault()
@@ -439,7 +442,9 @@ const Admin = () => {
             <div className="mb-8 inline-flex rounded-full border border-hairline bg-white p-1">
               {[
                 { id: 'calendar', label: 'By date' },
-                { id: 'recent', label: `Last ${RECENT_DAYS} days` }
+                { id: 'recent', label: `Last ${RECENT_DAYS} days` },
+                { id: 'finance', label: 'Finances' },
+                { id: 'vacation', label: 'Time off' }
               ].map((tab) => (
                 <button
                   key={tab.id}
@@ -456,7 +461,16 @@ const Admin = () => {
               ))}
             </div>
 
-            {viewMode === 'recent' ? (
+            {viewMode === 'finance' ? (
+              <FinancePanel bookings={bookings} getTotalPrice={getTotalPrice} />
+            ) : viewMode === 'vacation' ? (
+              <VacationPanel
+                vacations={vacations}
+                bookings={bookings}
+                onAdd={addVacation}
+                onRemove={removeVacation}
+              />
+            ) : viewMode === 'recent' ? (
               <div className="rounded-2xl border border-hairline bg-white p-4 shadow-card sm:p-8">
                 <div className="mb-7 flex flex-wrap items-center gap-x-3 gap-y-2">
                   <span className="h-1.5 w-1.5 rotate-45 bg-ink" />

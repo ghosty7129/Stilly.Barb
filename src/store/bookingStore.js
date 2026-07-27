@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { appointmentAPI } from '../services/api'
+import { vacationAPI } from '../services/vacationApi'
 
 // Database key for localStorage (fallback)
 const DB_KEY = 'barber_reservations'
@@ -17,8 +18,31 @@ const saveToDatabase = (bookings) => {
 
 const useBookingStore = create((set, get) => ({
   bookings: initializeDatabase(),
+  vacations: [],
   loading: false,
   error: null,
+
+  /**
+   * Load vacation periods from the backend. Public data — the booking
+   * calendar and the absence notice both depend on it.
+   */
+  loadVacations: async () => {
+    const vacations = await vacationAPI.getAll()
+    set({ vacations })
+    return vacations
+  },
+
+  addVacation: async (vacation) => {
+    const result = await vacationAPI.create(vacation)
+    if (result.success) await get().loadVacations()
+    return result
+  },
+
+  removeVacation: async (id) => {
+    const result = await vacationAPI.remove(id)
+    if (result.success) await get().loadVacations()
+    return result
+  },
   
   /**
    * Load bookings from backend API

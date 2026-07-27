@@ -7,6 +7,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const DB_FILE = path.join(__dirname, 'appointments.json');
+const VACATIONS_FILE = path.join(__dirname, 'vacations.json');
 
 // Initialize database
 let appointments = [];
@@ -26,6 +27,28 @@ if (fs.existsSync(DB_FILE)) {
   fs.writeFileSync(DB_FILE, JSON.stringify([], null, 2));
   console.log('✅ Database initialized (empty)');
 }
+
+// Vacations (file-based mirror of the Postgres `vacations` table)
+let vacations = [];
+
+if (fs.existsSync(VACATIONS_FILE)) {
+  try {
+    vacations = JSON.parse(fs.readFileSync(VACATIONS_FILE, 'utf8'));
+  } catch (error) {
+    console.error('Error loading vacations:', error);
+    vacations = [];
+  }
+} else {
+  fs.writeFileSync(VACATIONS_FILE, JSON.stringify([], null, 2));
+}
+
+const saveVacations = () => {
+  try {
+    fs.writeFileSync(VACATIONS_FILE, JSON.stringify(vacations, null, 2));
+  } catch (error) {
+    console.error('Error saving vacations:', error);
+  }
+};
 
 // Save to file
 const saveToFile = () => {
@@ -75,6 +98,27 @@ const db = {
       return appointments[index];
     }
     return null;
+  },
+
+  // --- Vacations ---
+  getAllVacations: () => {
+    return [...vacations].sort((a, b) => a.startDate.localeCompare(b.startDate));
+  },
+
+  createVacation: (vacation) => {
+    vacations.push(vacation);
+    saveVacations();
+    return vacation;
+  },
+
+  removeVacation: (id) => {
+    const index = vacations.findIndex(v => v.id === id);
+    if (index !== -1) {
+      vacations.splice(index, 1);
+      saveVacations();
+      return true;
+    }
+    return false;
   }
 };
 

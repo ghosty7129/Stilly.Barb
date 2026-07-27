@@ -8,10 +8,12 @@ import useBookingStore from '../store/bookingStore'
 import { useLanguage } from '../i18n/LanguageContext'
 import { getTranslation, getServiceLabel } from '../i18n/translations'
 import { analytics } from '../services/analytics'
+import AbsenceNotice from '../components/AbsenceNotice'
+import { isDateOnVacation } from '../services/vacationApi'
 
 const Booking = () => {
   const navigate = useNavigate()
-  const { addBooking, getBookingsByDate, loadBookings } = useBookingStore()
+  const { addBooking, getBookingsByDate, loadBookings, vacations, loadVacations } = useBookingStore()
   const { language } = useLanguage()
   const t = (key) => getTranslation(language, key)
   const topRef = useRef(null)
@@ -27,6 +29,10 @@ const Booking = () => {
 
     return () => clearTimeout(scrollTimer)
   }, [])
+
+  useEffect(() => {
+    loadVacations()
+  }, [loadVacations])
 
   // Detect mobile viewport (match Tailwind's md breakpoint)
   useEffect(() => {
@@ -96,12 +102,8 @@ const Booking = () => {
     return total
   }
 
-  const isAbsentDate = (date) => {
-    const year = date.getFullYear()
-    const month = date.getMonth() // 0-indexed; July = 6
-    const day = date.getDate()
-    return year === 2026 && month === 6 && day >= 10 && day <= 15
-  }
+  // Days the barber has marked as leave, straight from the backend.
+  const isAbsentDate = (date) => isDateOnVacation(date, vacations)
 
   // Generate dates for the current month view
   const generateDatesForMonth = (monthDate) => {
@@ -389,6 +391,7 @@ const Booking = () => {
 
   return (
     <div ref={topRef} className="min-h-screen bg-paper-soft pt-28 sm:pt-24">
+      <AbsenceNotice />
       <Header />
 
       {/* Booking Form */}

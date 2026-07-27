@@ -128,6 +128,12 @@ export const translations = {
     saving: 'Saving...',
     minutes: 'minutes',
     noteLabel: 'Note:',
+
+    // Absence / vacation notice
+    absenceNoticeTitle: 'Important notice',
+    absenceNoticeBody: 'Dear clients, I will be away from {start} to {end}. Please book your appointment before or after this period.',
+    absenceUnderstood: 'Got it',
+    absenceClosedDay: 'Closed',
   },
 
   bg: {
@@ -263,6 +269,12 @@ export const translations = {
     saving: 'Запазване...',
     minutes: 'минути',
     noteLabel: 'Бележка:',
+
+    // Absence / vacation notice
+    absenceNoticeTitle: 'Важно съобщение',
+    absenceNoticeBody: 'Уважаеми клиенти, ще отсъствам от {start} до {end}. Моля, запишете своя час преди или след този период.',
+    absenceUnderstood: 'Разбрах',
+    absenceClosedDay: 'Затворено',
   }
 }
 

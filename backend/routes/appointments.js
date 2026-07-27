@@ -1,6 +1,7 @@
 import express from 'express';
 import db from '../database/index.js';
 import emailService from '../services/emailService.js';
+import { isVacationDate } from './vacations.js';
 import { v4 as uuidv4 } from 'uuid';
 
 const router = express.Router();
@@ -163,6 +164,11 @@ router.post('/', async (req, res) => {
 
     if (!isDateWithinAllowedRange(normalizedDate)) {
       return res.status(400).json({ error: 'Date must be between today and 60 days ahead' });
+    }
+
+    // The calendar already hides these days; this stops a hand-crafted request.
+    if (await isVacationDate(normalizedDate)) {
+      return res.status(409).json({ error: 'The barbershop is closed on this date' });
     }
 
     const serviceDefinition = SERVICES[normalizedService];
