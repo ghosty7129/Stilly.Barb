@@ -6,7 +6,7 @@ import { format, addDays, isSameDay, startOfMonth, endOfMonth, eachDayOfInterval
 import { SERVICES, ADDONS, generateTimeSlots, isValidBookingDate, formatTime } from '../services/appointmentService'
 import useBookingStore from '../store/bookingStore'
 import { useLanguage } from '../i18n/LanguageContext'
-import { getTranslation } from '../i18n/translations'
+import { getTranslation, getServiceLabel } from '../i18n/translations'
 import { analytics } from '../services/analytics'
 
 const Booking = () => {
@@ -417,7 +417,7 @@ const Booking = () => {
                 <div className="grid grid-cols-1 gap-x-8 gap-y-7 md:grid-cols-2">
                   <div>
                     <label htmlFor="name" className="field-label">
-                      Име и Фамилия
+                      {t('fullNameLabel')}
                     </label>
                     <input
                       type="text"
@@ -513,7 +513,7 @@ const Booking = () => {
 
                         <div>
                           <h3 className={`font-display text-base font-semibold leading-snug sm:text-lg ${isSelected ? 'text-white' : 'text-ink'}`}>
-                            {service.name}
+                            {getServiceLabel(language, service.id, service.name)}
                           </h3>
                           <span className={`mt-2 block font-display text-xl font-bold ${isSelected ? 'text-white' : 'text-ink'}`}>
                             €{service.price}
@@ -583,7 +583,7 @@ const Booking = () => {
                           </div>
 
                           <div className="flex-1">
-                            <h3 className="font-display text-base font-semibold leading-snug text-ink">{addon.name}</h3>
+                            <h3 className="font-display text-base font-semibold leading-snug text-ink">{getServiceLabel(language, addon.id, addon.name)}</h3>
                             <p className="mt-0.5 text-[11px] uppercase tracking-wide text-neutral-400">
                               {(addon.displayDuration || addon.duration) > 0
                                 ? `${addon.displayDuration || addon.duration} min`
@@ -636,7 +636,7 @@ const Booking = () => {
                         </svg>
                       </span>
                       <p className="text-sm font-medium leading-relaxed text-neutral-500">
-                        Моля, попълнете данните си и изберете услуга преди да изберете дата и час.
+                        {t('lockedNotice')}
                       </p>
                     </div>
                   </div>
@@ -939,11 +939,11 @@ const Booking = () => {
                       className="mt-0.5 h-4 w-4 shrink-0 rounded border-neutral-300 text-ink accent-ink focus:ring-ink"
                     />
                     <span className="text-xs leading-relaxed text-neutral-600 sm:text-sm">
-                      Запознат/а съм с{' '}
+                      {t('consentPrefix')}{' '}
                       <Link to="/privacy-policy" className="font-semibold text-ink underline underline-offset-4 hover:opacity-70">
-                        Политиката за поверителност
+                        {t('consentLinkText')}
                       </Link>{' '}
-                      и съм съгласен/съгласна с нея, за да завърша резервацията си.
+                      {t('consentSuffix')}
                     </span>
                   </label>
                 </div>
@@ -954,7 +954,7 @@ const Booking = () => {
                   className={`btn-primary w-full py-5 ${!formData.privacyAccepted || isSubmitting ? 'cursor-not-allowed opacity-40' : ''}`}
                   disabled={!formData.privacyAccepted || isSubmitting}
                 >
-                  {isSubmitting ? 'Запазване...' : t('confirmAppointment')}
+                  {isSubmitting ? t('saving') : t('confirmAppointment')}
                   {!isSubmitting && (
                     <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M5 12h14m0 0l-6-6m6 6l-6 6" />

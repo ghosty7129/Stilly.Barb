@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useLanguage } from '../i18n/LanguageContext'
 import { getTranslation } from '../i18n/translations'
+import LanguageToggle from './LanguageToggle'
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -96,6 +97,8 @@ const Header = () => {
                 </button>
               ))}
 
+              <LanguageToggle layoutGroup="desktop-nav" />
+
               <Link
                 to="/book"
                 className="rounded-full bg-white px-6 py-3 text-[11px] font-semibold uppercase tracking-eyebrow text-ink transition-all duration-300 ease-editorial hover:-translate-y-0.5 hover:bg-white/90"
@@ -104,24 +107,28 @@ const Header = () => {
               </Link>
             </nav>
 
-            {/* Mobile Menu Button */}
-            <button
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              aria-label={isMenuOpen ? 'Close menu' : 'Open menu'}
-              aria-expanded={isMenuOpen}
-              className="relative flex h-11 w-11 items-center justify-center rounded-full border border-hairline-bright text-white transition-colors duration-300 hover:bg-white/10 md:hidden"
-            >
-              <motion.span
-                animate={isMenuOpen ? { y: 0, rotate: 45 } : { y: -4, rotate: 0 }}
-                transition={{ duration: 0.3, ease: 'easeInOut' }}
-                className="absolute h-[1.5px] w-5 bg-white"
-              />
-              <motion.span
-                animate={isMenuOpen ? { y: 0, rotate: -45 } : { y: 4, rotate: 0 }}
-                transition={{ duration: 0.3, ease: 'easeInOut' }}
-                className="absolute h-[1.5px] w-5 bg-white"
-              />
-            </button>
+            {/* Mobile: toggle stays reachable without opening the menu */}
+            <div className="flex items-center gap-2.5 md:hidden">
+              <LanguageToggle layoutGroup="mobile-bar" />
+
+              <button
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                aria-label={isMenuOpen ? 'Close menu' : 'Open menu'}
+                aria-expanded={isMenuOpen}
+                className="relative flex h-11 w-11 items-center justify-center rounded-full border border-hairline-bright text-white transition-colors duration-300 hover:bg-white/10"
+              >
+                <motion.span
+                  animate={isMenuOpen ? { y: 0, rotate: 45 } : { y: -4, rotate: 0 }}
+                  transition={{ duration: 0.3, ease: 'easeInOut' }}
+                  className="absolute h-[1.5px] w-5 bg-white"
+                />
+                <motion.span
+                  animate={isMenuOpen ? { y: 0, rotate: -45 } : { y: 4, rotate: 0 }}
+                  transition={{ duration: 0.3, ease: 'easeInOut' }}
+                  className="absolute h-[1.5px] w-5 bg-white"
+                />
+              </button>
+            </div>
           </div>
         </div>
       </motion.header>
@@ -169,6 +176,14 @@ const Header = () => {
                 >
                   {t('bookNow')}
                 </Link>
+
+                <div className="flex items-center justify-between gap-4 border-t border-hairline-light pt-6">
+                  <span className="text-[10px] uppercase tracking-eyebrow text-white/40">
+                    {t('switchLanguage')}
+                  </span>
+                  <LanguageToggle layoutGroup="mobile-menu" size="lg" />
+                </div>
+
                 <div className="flex items-center justify-between text-[10px] uppercase tracking-eyebrow text-white/40">
                   <span>{t('addressLine1')}</span>
                   <span>@stilly.barb</span>

@@ -2,66 +2,138 @@ import { useEffect, useRef } from 'react'
 import Header from '../components/Header'
 import Footer from '../components/Footer'
 import Reveal from '../components/Reveal'
+import { useLanguage } from '../i18n/LanguageContext'
 
-const sections = [
-  {
-    title: 'Администратор на данни',
-    body: [
-      'Barbershop Unusual обработва лични данни за целите на резервации и клиентска комуникация.'
+const POLICY = {
+  bg: {
+    heading: 'Политика за поверителност на личните данни',
+    updated: 'Последна актуализация: 02.05.2026 г.',
+    sections: [
+      {
+        title: 'Администратор на данни',
+        body: [
+          'Barbershop Unusual обработва лични данни за целите на резервации и клиентска комуникация.'
+        ]
+      },
+      {
+        title: 'Какви данни събираме',
+        body: ['При резервация обработваме следните данни:'],
+        list: [
+          'Име',
+          'Имейл адрес',
+          'Телефонен номер',
+          'Избрана услуга, дата и час',
+          'Допълнителни бележки (ако са предоставени)'
+        ]
+      },
+      {
+        title: 'Цел на обработването',
+        body: ['Данните се използват само за:'],
+        list: [
+          'управление и потвърждение на резервации',
+          'комуникация с клиента при необходимост',
+          'административно управление на графика'
+        ]
+      },
+      {
+        title: 'Срок за съхранение',
+        body: [
+          'Личните данни се съхраняват за период, необходим за изпълнение на услугата и законовите изисквания, след което се изтриват или анонимизират.'
+        ]
+      },
+      {
+        title: 'Споделяне на данни',
+        body: [
+          'Данните не се продават и не се предоставят на трети лица, освен когато това е необходимо по закон или за техническо предоставяне на услугата.'
+        ]
+      },
+      {
+        title: 'Вашите права',
+        body: ['Имате право на:'],
+        list: [
+          'достъп до вашите лични данни',
+          'корекция на неточни данни',
+          'изтриване на данни (когато е приложимо)',
+          'ограничаване на обработването'
+        ]
+      },
+      {
+        title: 'Контакт',
+        body: [
+          'За въпроси относно тази политика и обработването на лични данни, свържете се с нас на имейл: Barbershopunusual@gmail.com.'
+        ]
+      }
     ]
   },
-  {
-    title: 'Какви данни събираме',
-    body: ['При резервация обработваме следните данни:'],
-    list: [
-      'Име',
-      'Имейл адрес',
-      'Телефонен номер',
-      'Избрана услуга, дата и час',
-      'Допълнителни бележки (ако са предоставени)'
-    ]
-  },
-  {
-    title: 'Цел на обработването',
-    body: ['Данните се използват само за:'],
-    list: [
-      'управление и потвърждение на резервации',
-      'комуникация с клиента при необходимост',
-      'административно управление на графика'
-    ]
-  },
-  {
-    title: 'Срок за съхранение',
-    body: [
-      'Личните данни се съхраняват за период, необходим за изпълнение на услугата и законовите изисквания, след което се изтриват или анонимизират.'
-    ]
-  },
-  {
-    title: 'Споделяне на данни',
-    body: [
-      'Данните не се продават и не се предоставят на трети лица, освен когато това е необходимо по закон или за техническо предоставяне на услугата.'
-    ]
-  },
-  {
-    title: 'Вашите права',
-    body: ['Имате право на:'],
-    list: [
-      'достъп до вашите лични данни',
-      'корекция на неточни данни',
-      'изтриване на данни (когато е приложимо)',
-      'ограничаване на обработването'
-    ]
-  },
-  {
-    title: 'Контакт',
-    body: [
-      'За въпроси относно тази политика и обработването на лични данни, свържете се с нас на имейл: Barbershopunusual@gmail.com.'
+
+  en: {
+    heading: 'Privacy Policy',
+    updated: 'Last updated: 02.05.2026',
+    sections: [
+      {
+        title: 'Data controller',
+        body: [
+          'Barbershop Unusual processes personal data for the purposes of bookings and customer communication.'
+        ]
+      },
+      {
+        title: 'What data we collect',
+        body: ['When you make a booking we process the following data:'],
+        list: [
+          'Name',
+          'Email address',
+          'Phone number',
+          'Chosen service, date and time',
+          'Additional notes (if provided)'
+        ]
+      },
+      {
+        title: 'Purpose of processing',
+        body: ['The data is used only for:'],
+        list: [
+          'managing and confirming bookings',
+          'contacting the customer when necessary',
+          'administrative management of the schedule'
+        ]
+      },
+      {
+        title: 'Retention period',
+        body: [
+          'Personal data is stored for the period necessary to deliver the service and to meet legal requirements, after which it is deleted or anonymised.'
+        ]
+      },
+      {
+        title: 'Sharing of data',
+        body: [
+          'Data is never sold and is not shared with third parties, except where required by law or for the technical delivery of the service.'
+        ]
+      },
+      {
+        title: 'Your rights',
+        body: ['You have the right to:'],
+        list: [
+          'access your personal data',
+          'correct inaccurate data',
+          'erase data (where applicable)',
+          'restrict processing'
+        ]
+      },
+      {
+        title: 'Contact',
+        body: [
+          'For questions about this policy and the processing of personal data, contact us by email: Barbershopunusual@gmail.com.'
+        ]
+      }
     ]
   }
-]
+}
+
 
 const PrivacyPolicy = () => {
   const topRef = useRef(null)
+  const { language } = useLanguage()
+  const policy = POLICY[language] || POLICY.bg
+  const sections = policy.sections
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'auto' })
@@ -87,10 +159,10 @@ const PrivacyPolicy = () => {
                 <span className="eyebrow text-neutral-500">Legal</span>
               </div>
               <h1 className="section-title mt-5 text-ink">
-                Политика за поверителност на личните данни
+                {policy.heading}
               </h1>
               <p className="mt-5 text-[11px] uppercase tracking-wider2 text-neutral-400">
-                Последна актуализация: 02.05.2026 г.
+                {policy.updated}
               </p>
             </Reveal>
 

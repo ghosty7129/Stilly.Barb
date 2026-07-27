@@ -18,9 +18,7 @@ const Contact = () => {
   const weekdayHours = splitHours(t('mondayFriday'))
   const weekendHours = splitHours(t('saturdaySunday'))
 
-  const intro = language === 'en'
-    ? "Have questions? We'd love to hear from you. Send us a message and we'll be happy to respond as soon as possible."
-    : 'Имате въпроси? Изпратете ни съобщение и ще ви отговорим възможно най-скоро.'
+  const intro = t('contactIntro')
 
   return (
     <section id="contact" className="relative overflow-hidden bg-ink py-20 sm:py-28 lg:py-32">

@@ -2,7 +2,7 @@ import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { DISPLAY_SERVICES } from '../services/appointmentService'
 import { useLanguage } from '../i18n/LanguageContext'
-import { getTranslation } from '../i18n/translations'
+import { getTranslation, getServiceLabel } from '../i18n/translations'
 import Reveal from './Reveal'
 
 const Services = () => {
@@ -107,7 +107,7 @@ const Services = () => {
                   {/* Name sits in a fixed two-line box so every card's title and
                       price land on exactly the same baseline. */}
                   <h3 className="relative z-10 mt-auto flex min-h-[2.5em] items-end hyphens-auto break-words pt-5 font-display text-[15px] font-semibold leading-tight text-ink transition-colors sm:text-xl lg:text-2xl">
-                    {service.name}
+                    {getServiceLabel(language, service.id, service.name)}
                   </h3>
 
                   <div className="relative z-10 mt-3 flex h-[46px] items-start justify-between gap-2 sm:mt-4 sm:h-[58px] sm:gap-3">
@@ -119,7 +119,7 @@ const Services = () => {
                       )}
                       {service.id === 'beard' && (
                         <span className="mt-1.5 block text-[10px] leading-tight text-neutral-500 sm:text-[11px]">
-                          (при комбо - 7€)
+                          {t('comboBeardNote')}
                         </span>
                       )}
                       {needsContact && (

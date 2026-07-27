@@ -4,12 +4,12 @@
 export const translations = {
   en: {
     // Header Navigation
-    services: 'Услуги',
-    about: 'За нас',
-    gallery: 'Галерия',
-    contact: 'Контакт',
-    bookNow: 'Резервирайте',
-    backToHome: '← Назад към начало',
+    services: 'Services',
+    about: 'About',
+    gallery: 'Gallery',
+    contact: 'Contact',
+    bookNow: 'Book Now',
+    backToHome: '← Back to home',
 
     // Hero Section
     premium: 'Unusual',
@@ -85,7 +85,6 @@ export const translations = {
     yourEmail: 'Your Email',
     subject: 'Subject',
     message: 'Message',
-    sendMessage: 'Send',
     messageSentSuccess: 'Message sent successfully!',
     messageSentError: 'Failed to send message. Please try again.',
     locationLabel: 'Location',
@@ -113,6 +112,22 @@ export const translations = {
     noBookingFound: 'No booking information found',
     websiteCreatedBy: 'Website created by',
     privacyPolicy: 'Privacy Policy',
+
+    // Language switcher
+    languageName: 'English',
+    switchLanguage: 'Switch language',
+
+    // Inline copy
+    contactIntro: "Have questions? We'd love to hear from you. Send us a message and we'll be happy to respond as soon as possible.",
+    comboBeardNote: '(7€ as part of a combo)',
+    fullNameLabel: 'First & Last Name',
+    lockedNotice: 'Please fill in your details and choose a service before picking a date and time.',
+    consentPrefix: 'I have read the',
+    consentLinkText: 'Privacy Policy',
+    consentSuffix: 'and I agree to it in order to complete my booking.',
+    saving: 'Saving...',
+    minutes: 'minutes',
+    noteLabel: 'Note:',
   },
 
   bg: {
@@ -205,7 +220,6 @@ export const translations = {
     yourEmail: 'Вашият имейл',
     subject: 'Предмет',
     message: 'Съобщение',
-    sendMessage: 'Изпращане',
     messageSentSuccess: 'Съобщението е изпратено успешно!',
     messageSentError: 'Неудачно изпращане на съобщение. Моля, опитайте отново.',
     locationLabel: 'Локация',
@@ -233,7 +247,42 @@ export const translations = {
     noBookingFound: 'Информацията за резервация не е намерена',
     websiteCreatedBy: 'Уебсайт създаден от',
     privacyPolicy: 'Политика за поверителност на личните данни',
+
+    // Language switcher
+    languageName: 'Български',
+    switchLanguage: 'Смяна на езика',
+
+    // Inline copy
+    contactIntro: 'Имате въпроси? Изпратете ни съобщение и ще ви отговорим възможно най-скоро.',
+    comboBeardNote: '(при комбо - 7€)',
+    fullNameLabel: 'Име и Фамилия',
+    lockedNotice: 'Моля, попълнете данните си и изберете услуга преди да изберете дата и час.',
+    consentPrefix: 'Запознат/а съм с',
+    consentLinkText: 'Политиката за поверителност',
+    consentSuffix: 'и съм съгласен/съгласна с нея, за да завърша резервацията си.',
+    saving: 'Запазване...',
+    minutes: 'минути',
+    noteLabel: 'Бележка:',
   }
+}
+
+// Service names live in Bulgarian in appointmentService (that is what gets sent
+// to the backend and shown in the admin/emails). These are display-only labels.
+const serviceLabels = {
+  en: {
+    normal: 'Haircut & Styling',
+    fade: 'Haircut & Styling',
+    buzzcut: 'Buzzcut / Fade',
+    beard: 'Beard Shaping',
+    'beard-addon': 'Beard Shaping',
+    eyebrows: 'Eyebrow Shaping',
+    'hair-wash': 'Hair Wash',
+    'hair-dye': 'Hair Colouring'
+  }
+}
+
+export const getServiceLabel = (language, id, fallback) => {
+  return serviceLabels[language]?.[id] || fallback
 }
 
 export const getTranslation = (language, key) => {

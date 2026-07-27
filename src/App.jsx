@@ -7,10 +7,12 @@ import Admin from './pages/Admin'
 import PrivacyPolicy from './pages/PrivacyPolicy'
 import { analytics } from './services/analytics'
 import useBookingStore from './store/bookingStore'
+import { useLanguage } from './i18n/LanguageContext'
 
 function App() {
   const location = useLocation()
   const loadBookings = useBookingStore(state => state.loadBookings)
+  const { isSwitching } = useLanguage()
 
   // Track page views
   useEffect(() => {
@@ -30,7 +32,7 @@ function App() {
   }, [])
 
   return (
-    <div className="App min-h-screen w-full overflow-x-hidden">
+    <div className={`App lang-swap min-h-screen w-full overflow-x-hidden ${isSwitching ? 'is-swapping' : ''}`}>
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/book" element={<Booking />} />

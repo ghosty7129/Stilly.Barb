@@ -5,7 +5,7 @@ import { motion } from 'framer-motion'
 import { format } from 'date-fns'
 import { SERVICES, ADDONS, formatTime } from '../services/appointmentService'
 import { useLanguage } from '../i18n/LanguageContext'
-import { getTranslation } from '../i18n/translations'
+import { getTranslation, getServiceLabel } from '../i18n/translations'
 
 const DetailRow = ({ label, children, icon }) => (
   <div className="flex items-start gap-4 border-t border-hairline py-5 first:border-t-0 first:pt-0">
@@ -64,14 +64,16 @@ const Confirmation = () => {
 
   const service = SERVICES.find(s => s.id === booking.service)
   const bookingName = booking.name || booking.customer_name
-  const resolvedServiceName = booking.service_name || service?.name || booking.service
-  const resolvedAddons = (booking.addon_names && booking.addon_names.length > 0)
-    ? booking.addon_names
-    : (Array.isArray(booking.addons)
-      ? booking.addons
-          .map(addonId => ADDONS.find(a => a.id === addonId)?.name)
-          .filter(Boolean)
-      : [])
+  const storedServiceName = booking.service_name || service?.name || booking.service
+  const resolvedServiceName = getServiceLabel(language, booking.service, storedServiceName)
+  const resolvedAddons = Array.isArray(booking.addons) && booking.addons.length > 0
+    ? booking.addons
+        .map(addonId => {
+          const addon = ADDONS.find(a => a.id === addonId)
+          return addon ? getServiceLabel(language, addon.id, addon.name) : null
+        })
+        .filter(Boolean)
+    : (booking.addon_names || [])
 
   return (
     <div ref={topRef} className="flex min-h-screen items-start justify-center bg-paper-soft py-10 pt-28 sm:py-16 sm:pt-24">
@@ -159,7 +161,7 @@ const Confirmation = () => {
               >
                 <p className="break-words font-display text-lg font-semibold text-ink">{resolvedServiceName}</p>
                 <p className="mt-1 text-[11px] uppercase tracking-wider2 text-neutral-400">
-                  {service?.duration} minutes • €{service?.price}
+                  {service?.duration} {t('minutes')} • €{service?.price}
                 </p>
               </DetailRow>
 
@@ -229,7 +231,7 @@ const Confirmation = () => {
                 </svg>
               </span>
               <p className="text-sm leading-relaxed text-neutral-600">
-                <strong className="font-semibold text-ink">{language === 'bg' ? 'Бележка:' : 'Note:'}</strong>{' '}
+                <strong className="font-semibold text-ink">{t('noteLabel')}</strong>{' '}
                 {t('confirmationEmailNote')}
               </p>
             </div>
