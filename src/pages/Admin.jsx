@@ -1,11 +1,14 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { format, addDays, isSameDay, startOfMonth, endOfMonth, eachDayOfInterval, isBefore, startOfDay } from 'date-fns'
+import { format, addDays, isSameDay, startOfMonth, endOfMonth, eachDayOfInterval, isBefore, startOfDay, subDays, getDay, isToday, isYesterday } from 'date-fns'
 import useBookingStore from '../store/bookingStore'
 import { SERVICES, ADDONS, formatTime, isValidBookingDate } from '../services/appointmentService'
 import { useLanguage } from '../i18n/LanguageContext'
 import { getTranslation } from '../i18n/translations'
+
+const RECENT_DAYS = 10
+const WEEKDAY_LABELS = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
 
 const Admin = () => {
   const { bookings, removeBooking, loadBookings } = useBookingStore()
@@ -19,6 +22,7 @@ const Admin = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [selectedDate, setSelectedDate] = useState(new Date())
   const [currentMonthDate, setCurrentMonthDate] = useState(new Date())
+  const [viewMode, setViewMode] = useState('calendar')
   const [loginError, setLoginError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
 
@@ -105,15 +109,6 @@ const Admin = () => {
     return basePrice + addonsPrice
   }
 
-  // Generate dates for calendar (90 days range)
-  const generateDates = () => {
-    const dates = []
-    for (let i = -30; i < 60; i++) {
-      dates.push(addDays(new Date(), i))
-    }
-    return dates
-  }
-
   const generateDatesForMonth = (monthDate) => {
     const start = startOfMonth(monthDate)
     const end = endOfMonth(monthDate)
@@ -158,6 +153,67 @@ const Admin = () => {
   // Get bookings for selected date
   const selectedDateString = format(selectedDate, 'yyyy-MM-dd')
   const dateBookings = bookings.filter(b => b.date === selectedDateString)
+
+  const isRealBooking = (booking) => booking.status !== 'blocked' && booking.service !== 'blocked'
+
+  // How many real reservations sit on each date, so the calendar can flag busy days.
+  const bookingCountByDate = useMemo(() => {
+    return bookings.reduce((counts, booking) => {
+      if (!isRealBooking(booking)) return counts
+      counts[booking.date] = (counts[booking.date] || 0) + 1
+      return counts
+    }, {})
+  }, [bookings])
+
+  // Month laid out as a real Monday-first grid: leading blanks keep every date
+  // under its own weekday column, and only bookable days stay clickable.
+  const monthGrid = useMemo(() => {
+    const start = startOfMonth(currentMonthDate)
+    const bookable = new Set(
+      generateDatesForMonth(currentMonthDate).map(date => format(date, 'yyyy-MM-dd'))
+    )
+
+    return {
+      leadingBlanks: (getDay(start) + 6) % 7,
+      days: eachDayOfInterval({ start, end: endOfMonth(currentMonthDate) }),
+      bookable
+    }
+  }, [currentMonthDate])
+
+  // Reservations grouped by the day the customer actually booked them.
+  const recentGroups = useMemo(() => {
+    const cutoff = startOfDay(subDays(new Date(), RECENT_DAYS - 1))
+
+    const entries = bookings
+      .filter(isRealBooking)
+      .map(booking => ({ booking, createdAt: booking.created_at ? new Date(booking.created_at) : null }))
+      .filter(({ createdAt }) => createdAt && !Number.isNaN(createdAt.getTime()) && !isBefore(createdAt, cutoff))
+      .sort((a, b) => b.createdAt - a.createdAt)
+
+    return entries.reduce((groups, entry) => {
+      const key = format(entry.createdAt, 'yyyy-MM-dd')
+      const current = groups[groups.length - 1]
+
+      if (current && current.key === key) current.items.push(entry)
+      else groups.push({ key, date: entry.createdAt, items: [entry] })
+
+      return groups
+    }, [])
+  }, [bookings])
+
+  const recentCount = recentGroups.reduce((total, group) => total + group.items.length, 0)
+
+  const createdDayLabel = (date) => {
+    if (isToday(date)) return 'Today'
+    if (isYesterday(date)) return 'Yesterday'
+    return format(date, 'EEEE, MMM d')
+  }
+
+  // "10:00 AM" -> ["10:00", "AM"] so the badge can stack them instead of clipping.
+  const splitTime = (time) => {
+    const [clock, meridiem = ''] = formatTime(time).split(' ')
+    return { clock, meridiem }
+  }
 
   const handleBlockDay = async () => {
     if (!window.confirm('Block entire day? This will reserve all available slots for the selected date.')) return;
@@ -347,16 +403,144 @@ const Admin = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: [0.2, 0.7, 0.2, 1] }}
           >
-            <div className="mb-10 flex flex-wrap items-end justify-between gap-4">
+            <div className="mb-8 flex flex-wrap items-end justify-between gap-x-6 gap-y-5">
               <div>
                 <span className="eyebrow text-neutral-400">Overview</span>
                 <h1 className="section-title mt-3 text-ink">Reservations</h1>
               </div>
-              <div className="rounded-xl border border-hairline bg-white px-5 py-3">
-                <p className="eyebrow text-neutral-400">Total bookings</p>
-                <p className="mt-1 font-display text-2xl font-bold text-ink">{bookings.length}</p>
-              </div>
+
+              {/* Numbers bottom-align via mt-auto so wrapped labels can't stagger them */}
+              <dl className="grid w-full grid-cols-3 gap-2 sm:flex sm:w-auto sm:gap-3">
+                {[
+                  { label: 'Total', value: bookings.length },
+                  { label: `Last ${RECENT_DAYS} days`, value: recentCount },
+                  { label: 'Selected day', value: dateBookings.length }
+                ].map((stat) => (
+                  <div
+                    key={stat.label}
+                    className="flex flex-col rounded-xl border border-hairline bg-white px-3.5 py-3 sm:min-w-[7.5rem] sm:px-5 sm:py-3.5"
+                  >
+                    <dt className="eyebrow leading-snug text-neutral-400">{stat.label}</dt>
+                    <dd className="mt-auto pt-2 font-display text-2xl font-bold leading-none text-ink">{stat.value}</dd>
+                  </div>
+                ))}
+              </dl>
             </div>
+
+            {/* View switch */}
+            <div className="mb-8 inline-flex rounded-full border border-hairline bg-white p-1">
+              {[
+                { id: 'calendar', label: 'By date' },
+                { id: 'recent', label: `Last ${RECENT_DAYS} days` }
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setViewMode(tab.id)}
+                  className={`rounded-full px-5 py-2.5 text-[10px] font-semibold uppercase tracking-eyebrow transition-all duration-300 ease-editorial ${
+                    viewMode === tab.id
+                      ? 'bg-ink text-white'
+                      : 'text-neutral-500 hover:text-ink'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+
+            {viewMode === 'recent' ? (
+              <div className="rounded-2xl border border-hairline bg-white p-4 shadow-card sm:p-8">
+                <div className="mb-7 flex flex-wrap items-center gap-x-3 gap-y-2">
+                  <span className="h-1.5 w-1.5 rotate-45 bg-ink" />
+                  <h2 className="eyebrow text-neutral-500">Booked in the last {RECENT_DAYS} days</h2>
+                  <span className="hidden h-px min-w-[2rem] flex-1 bg-hairline sm:block" />
+                  <span className="text-[10px] uppercase tracking-eyebrow text-neutral-400">
+                    {recentCount} {recentCount === 1 ? 'reservation' : 'reservations'}
+                  </span>
+                </div>
+
+                {recentGroups.length === 0 ? (
+                  <div className="flex flex-col items-center py-16 text-center">
+                    <img
+                      src={`${apiUrl}/images/logos/UNUSUAL STILLY BARB BLACK.png`}
+                      alt="Unusual Stilly Barb"
+                      className="mb-5 h-12 w-auto object-contain opacity-25"
+                    />
+                    <p className="text-sm text-neutral-400">No reservations were made in the last {RECENT_DAYS} days</p>
+                  </div>
+                ) : (
+                  <div className="space-y-9">
+                    {recentGroups.map((group, groupIndex) => (
+                      <div key={group.key}>
+                        <div className="mb-4 flex items-center gap-3">
+                          <h3 className="font-display text-sm font-bold uppercase tracking-tight text-ink">
+                            {createdDayLabel(group.date)}
+                          </h3>
+                          <span className="h-px flex-1 bg-hairline" />
+                          <span className="text-[10px] uppercase tracking-eyebrow text-neutral-400">
+                            {group.items.length}
+                          </span>
+                        </div>
+
+                        <div className="space-y-2.5">
+                          {group.items.map(({ booking, createdAt }, index) => {
+                            const appointment = splitTime(booking.time)
+
+                            return (
+                              <motion.div
+                                key={booking.id}
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: Math.min(groupIndex * 0.05 + index * 0.03, 0.4) }}
+                                className="grid grid-cols-[auto_1fr] items-start gap-x-4 gap-y-4 rounded-xl border border-hairline p-4 transition-colors duration-300 ease-editorial hover:border-ink sm:grid-cols-[auto_1fr_auto] sm:items-center sm:gap-5 sm:p-5"
+                              >
+                                <span className="flex h-14 w-16 flex-shrink-0 flex-col items-center justify-center rounded-xl border border-hairline bg-paper-soft text-ink">
+                                  <span className="font-display text-[15px] font-bold leading-none">
+                                    {format(createdAt, 'HH:mm')}
+                                  </span>
+                                  <span className="mt-1 text-[9px] font-medium uppercase tracking-wider2 text-neutral-400">
+                                    Booked
+                                  </span>
+                                </span>
+
+                                <div className="min-w-0">
+                                  <h4 className="truncate font-display text-base font-bold leading-tight text-ink">
+                                    {booking.name || booking.customer_name}
+                                  </h4>
+                                  <p className="mt-1 text-sm text-neutral-500">{booking.phone}</p>
+                                  <p className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] uppercase tracking-wider2 text-neutral-400">
+                                    <span className="text-neutral-600">{booking.service_name || getServiceName(booking.service)}</span>
+                                    <span className="text-neutral-300">/</span>
+                                    <span>{format(new Date(`${booking.date}T00:00:00`), 'EEE, MMM d')}</span>
+                                    <span className="text-neutral-300">/</span>
+                                    <span>{appointment.clock} {appointment.meridiem}</span>
+                                  </p>
+                                </div>
+
+                                <div className="col-span-2 flex items-center justify-between gap-4 border-t border-hairline pt-3 sm:col-span-1 sm:justify-end sm:border-0 sm:pt-0">
+                                  <span className="font-display text-lg font-bold text-ink">
+                                    €{getTotalPrice(booking)}
+                                  </span>
+                                  <button
+                                    onClick={() => handleDelete(booking.id)}
+                                    className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full border border-hairline text-neutral-400 transition-colors hover:border-red-500 hover:bg-red-500 hover:text-white"
+                                    title="Delete appointment"
+                                  >
+                                    <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                  </button>
+                                </div>
+                              </motion.div>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ) : (
 
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
               {/* Calendar */}
@@ -392,54 +576,91 @@ const Admin = () => {
                     </button>
                   </div>
 
-                  <div className="grid grid-cols-7 gap-1.5">
-                    {generateDatesForMonth(currentMonthDate).map((date) => (
-                      <button
-                        key={date.toISOString()}
-                        onClick={() => setSelectedDate(date)}
-                        className={`rounded-lg py-2 text-center text-sm font-semibold transition-all duration-300 ${
-                          isSameDay(date, selectedDate)
-                            ? 'bg-ink text-white'
-                            : 'border border-hairline bg-white text-ink hover:border-ink'
-                        }`}
+                  <div className="mb-2 grid grid-cols-7 gap-1">
+                    {WEEKDAY_LABELS.map((label, index) => (
+                      <span
+                        key={`${label}-${index}`}
+                        className="text-center text-[9px] font-medium uppercase tracking-wider2 text-neutral-400"
                       >
-                        <div className={`text-[9px] uppercase tracking-wider2 ${
-                          isSameDay(date, selectedDate) ? 'text-white/55' : 'text-neutral-400'
-                        }`}>{format(date, 'EEE').slice(0, 1)}</div>
-                        <div className="font-display">{format(date, 'd')}</div>
-                      </button>
+                        {label}
+                      </span>
                     ))}
                   </div>
 
+                  <div className="grid grid-cols-7 gap-1">
+                    {Array.from({ length: monthGrid.leadingBlanks }, (_, index) => (
+                      <span key={`blank-${index}`} aria-hidden />
+                    ))}
+
+                    {monthGrid.days.map((date) => {
+                      const key = format(date, 'yyyy-MM-dd')
+                      const isSelected = isSameDay(date, selectedDate)
+                      const isBookable = monthGrid.bookable.has(key)
+                      const count = bookingCountByDate[key] || 0
+
+                      return (
+                        <button
+                          key={key}
+                          type="button"
+                          onClick={() => setSelectedDate(date)}
+                          disabled={!isBookable}
+                          className={`relative flex aspect-square flex-col items-center justify-center rounded-lg font-display text-sm font-semibold transition-all duration-300 ease-editorial ${
+                            isSelected
+                              ? 'bg-ink text-white'
+                              : isBookable
+                                ? 'border border-hairline bg-white text-ink hover:border-ink'
+                                : 'cursor-not-allowed border border-transparent text-neutral-300'
+                          }`}
+                        >
+                          {format(date, 'd')}
+                          {count > 0 && (
+                            <span
+                              className={`absolute bottom-1.5 h-1 w-1 rounded-full ${
+                                isSelected ? 'bg-white/70' : 'bg-ink'
+                              }`}
+                              title={`${count} ${count === 1 ? 'reservation' : 'reservations'}`}
+                            />
+                          )}
+                        </button>
+                      )
+                    })}
+                  </div>
+
                   <div className="mt-6 rounded-xl bg-ink p-5 text-white">
-                    <p className="eyebrow text-white/40">Selected</p>
+                    <div className="flex items-baseline justify-between gap-3">
+                      <p className="eyebrow text-white/40">Selected</p>
+                      <p className="text-[10px] uppercase tracking-eyebrow text-white/40">
+                        {dateBookings.length} {dateBookings.length === 1 ? 'booking' : 'bookings'}
+                      </p>
+                    </div>
                     <p className="mt-2 font-display text-lg font-bold">
-                      {format(selectedDate, 'MMM d, yyyy')}
+                      {format(selectedDate, 'EEE, MMM d, yyyy')}
                     </p>
 
-                    <div className="mt-5 flex flex-wrap items-center gap-2">
+                    <div className="mt-5 grid grid-cols-2 gap-2">
                       <button
                         type="button"
                         onClick={handleBlockDay}
-                        className="rounded-full border border-hairline-bright px-4 py-2 text-[10px] uppercase tracking-eyebrow text-white transition-colors hover:bg-white hover:text-ink"
+                        className="rounded-full border border-hairline-bright px-3 py-2.5 text-[10px] font-semibold uppercase tracking-wider2 text-white transition-colors hover:bg-white hover:text-ink"
                       >
                         Make Day Off
                       </button>
                       <button
                         type="button"
                         onClick={handleUnblockDay}
-                        className="rounded-full border border-hairline-bright px-4 py-2 text-[10px] uppercase tracking-eyebrow text-white transition-colors hover:bg-white hover:text-ink"
+                        className="rounded-full border border-hairline-bright px-3 py-2.5 text-[10px] font-semibold uppercase tracking-wider2 text-white transition-colors hover:bg-white hover:text-ink"
                       >
                         Unblock Day
                       </button>
-                      <button
-                        type="button"
-                        onClick={() => { setSelectedDate(new Date()); loadBookings() }}
-                        className="px-2 py-2 text-[10px] uppercase tracking-eyebrow text-white/50 transition-colors hover:text-white"
-                      >
-                        Reset
-                      </button>
                     </div>
+
+                    <button
+                      type="button"
+                      onClick={() => { setSelectedDate(new Date()); setCurrentMonthDate(new Date()); loadBookings() }}
+                      className="mt-3 w-full py-1 text-[10px] uppercase tracking-eyebrow text-white/45 transition-colors hover:text-white"
+                    >
+                      Reset to today
+                    </button>
                   </div>
                 </div>
               </div>
@@ -467,6 +688,7 @@ const Admin = () => {
                     <div className="space-y-3">
                       {dateBookings.sort((a, b) => a.time.localeCompare(b.time)).map((booking, index) => {
                         const addonNames = getAddonNames(booking)
+                        const { clock, meridiem } = splitTime(booking.time)
 
                         return (
                         <motion.div
@@ -474,20 +696,23 @@ const Admin = () => {
                           initial={{ opacity: 0, x: 16 }}
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ delay: index * 0.06 }}
-                          className="group rounded-xl border border-hairline p-5 transition-all duration-300 ease-editorial hover:border-ink sm:p-6"
+                          className="group rounded-xl border border-hairline p-4 transition-all duration-300 ease-editorial hover:border-ink sm:p-6"
                         >
-                          <div className="mb-5 flex items-start justify-between gap-4">
-                            <div className="flex items-center gap-4">
-                              <span className="flex h-14 w-14 flex-shrink-0 flex-col items-center justify-center rounded-xl bg-ink text-white">
-                                <span className="font-display text-sm font-bold leading-none">
-                                  {formatTime(booking.time)}
+                          <div className="mb-5 flex items-start justify-between gap-3 sm:gap-4">
+                            <div className="flex min-w-0 items-center gap-3.5 sm:gap-4">
+                              <span className="flex h-14 w-16 flex-shrink-0 flex-col items-center justify-center rounded-xl bg-ink text-white">
+                                <span className="font-display text-[15px] font-bold leading-none">
+                                  {clock}
+                                </span>
+                                <span className="mt-1 text-[9px] font-medium uppercase tracking-wider2 text-white/50">
+                                  {meridiem}
                                 </span>
                               </span>
                               <div className="min-w-0">
-                                <h3 className="font-display text-lg font-bold leading-tight text-ink">
+                                <h3 className="truncate font-display text-lg font-bold leading-tight text-ink">
                                   {booking.name || booking.customer_name}
                                 </h3>
-                                <p className="mt-0.5 text-sm text-neutral-500">{booking.phone}</p>
+                                <p className="mt-1 text-sm text-neutral-500">{booking.phone}</p>
                               </div>
                             </div>
 
@@ -502,34 +727,34 @@ const Admin = () => {
                             </button>
                           </div>
 
-                          <dl className="grid grid-cols-1 gap-4 border-t border-hairline pt-4 sm:grid-cols-2">
-                            <div>
+                          <dl className="grid grid-cols-1 gap-x-5 gap-y-4 border-t border-hairline pt-4 sm:grid-cols-[1fr_auto]">
+                            <div className="min-w-0">
                               <dt className="text-[10px] uppercase tracking-eyebrow text-neutral-400">Service</dt>
-                              <dd className="mt-1 font-medium text-ink">{booking.service_name || getServiceName(booking.service)}</dd>
+                              <dd className="mt-1.5 font-medium leading-snug text-ink">{booking.service_name || getServiceName(booking.service)}</dd>
                             </div>
-                            <div>
-                              <dt className="text-[10px] uppercase tracking-eyebrow text-neutral-400">Total Price</dt>
-                              <dd className="mt-1 font-display text-lg font-bold text-ink">
-                                ${getTotalPrice(booking)}
+                            <div className="sm:text-right">
+                              <dt className="text-[10px] uppercase tracking-eyebrow text-neutral-400">Total price</dt>
+                              <dd className="mt-1.5 font-display text-lg font-bold leading-none text-ink">
+                                €{getTotalPrice(booking)}
                               </dd>
                             </div>
 
                             {addonNames.length > 0 && (
-                              <div className="sm:col-span-2">
+                              <div className="min-w-0 sm:col-span-2">
                                 <dt className="text-[10px] uppercase tracking-eyebrow text-neutral-400">Add-services</dt>
-                                <dd className="mt-1 font-medium text-ink">{addonNames.join(', ')}</dd>
+                                <dd className="mt-1.5 font-medium leading-snug text-ink">{addonNames.join(', ')}</dd>
                               </div>
                             )}
 
-                            <div className="sm:col-span-2">
+                            <div className="min-w-0 sm:col-span-2">
                               <dt className="text-[10px] uppercase tracking-eyebrow text-neutral-400">Email</dt>
-                              <dd className="mt-1 break-words text-sm text-neutral-600">{booking.email}</dd>
+                              <dd className="mt-1.5 break-words text-sm text-neutral-600">{booking.email}</dd>
                             </div>
 
                             {booking.notes && (
-                              <div className="sm:col-span-2">
+                              <div className="min-w-0 sm:col-span-2">
                                 <dt className="text-[10px] uppercase tracking-eyebrow text-neutral-400">Notes</dt>
-                                <dd className="mt-1 text-sm text-neutral-600">{booking.notes}</dd>
+                                <dd className="mt-1.5 text-sm leading-relaxed text-neutral-600">{booking.notes}</dd>
                               </div>
                             )}
                           </dl>
@@ -541,6 +766,8 @@ const Admin = () => {
                 </div>
               </div>
             </div>
+
+            )}
           </motion.div>
         </div>
       </section>
