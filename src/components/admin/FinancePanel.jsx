@@ -1,18 +1,48 @@
 import { useMemo } from 'react'
 import { motion } from 'framer-motion'
-import { subDays, startOfDay, isBefore } from 'date-fns'
+import { subDays, subMonths, startOfDay, startOfMonth, endOfMonth, format } from 'date-fns'
 import { SERVICES } from '../../services/appointmentService'
 
-// Windows the barber asked for, shortest first.
-const PERIODS = [
-  { id: 'day', label: 'Last 24 hours', days: 1 },
-  { id: 'week', label: 'Last week', days: 7 },
-  { id: 'month', label: 'Last month', days: 30 },
-  { id: 'halfYear', label: 'Last 6 months', days: 182 },
-  { id: 'year', label: 'Last year', days: 365 }
-]
-
 const isRealBooking = (booking) => booking.status !== 'blocked' && booking.service !== 'blocked'
+
+/** YYYY-MM-DD in local time — string compares keep every range timezone-proof. */
+const dateKey = (date) => format(date, 'yyyy-MM-dd')
+const prettyDay = (key) => {
+  const [year, month, day] = key.split('-')
+  return `${day}.${month}.${year}`
+}
+
+/**
+ * Rolling windows end today; the month cards run 1st → last day of a calendar
+ * month so the barber can see exactly which month the money belongs to.
+ */
+const buildPeriods = (today) => {
+  const rolling = (id, label, days) => ({
+    id,
+    label,
+    start: dateKey(subDays(today, days - 1)),
+    end: dateKey(today)
+  })
+
+  const calendarMonth = (id, monthDate) => ({
+    id,
+    label: format(monthDate, 'MMMM yyyy'),
+    start: dateKey(startOfMonth(monthDate)),
+    end: dateKey(endOfMonth(monthDate)),
+    isMonth: true
+  })
+
+  const previousMonth = subMonths(today, 1)
+
+  return [
+    rolling('day', 'Last 24 hours', 1),
+    rolling('week', 'Last week', 7),
+    calendarMonth('thisMonth', today),
+    calendarMonth('lastMonth', previousMonth),
+    rolling('halfYear', 'Last 6 months', 182),
+    rolling('year', 'Last year', 365)
+  ]
+}
 
 const FinancePanel = ({ bookings, getTotalPrice }) => {
   // Revenue is counted on the day of the visit, so future bookings never
@@ -20,21 +50,18 @@ const FinancePanel = ({ bookings, getTotalPrice }) => {
   const stats = useMemo(() => {
     const today = startOfDay(new Date())
 
+    const todayKey = dateKey(today)
+
     const past = bookings
-      .filter((booking) => {
-        if (!isRealBooking(booking) || !booking.date) return false
-        const date = startOfDay(new Date(`${booking.date}T00:00:00`))
-        return !Number.isNaN(date.getTime()) && !isBefore(today, date)
-      })
+      .filter((booking) => isRealBooking(booking) && booking.date && booking.date <= todayKey)
       .map((booking) => ({
-        date: startOfDay(new Date(`${booking.date}T00:00:00`)),
+        date: booking.date,
         price: getTotalPrice(booking),
         service: booking.service
       }))
 
-    const byPeriod = PERIODS.map((period) => {
-      const cutoff = subDays(today, period.days - 1)
-      const items = past.filter((item) => !isBefore(item.date, cutoff))
+    const byPeriod = buildPeriods(today).map((period) => {
+      const items = past.filter((item) => item.date >= period.start && item.date <= period.end)
       const revenue = items.reduce((sum, item) => sum + item.price, 0)
 
       return {
@@ -45,7 +72,8 @@ const FinancePanel = ({ bookings, getTotalPrice }) => {
       }
     })
 
-    const yearItems = past.filter((item) => !isBefore(item.date, subDays(today, 364)))
+    const yearStart = dateKey(subDays(today, 364))
+    const yearItems = past.filter((item) => item.date >= yearStart)
     const byService = Object.entries(
       yearItems.reduce((map, item) => {
         map[item.service] = map[item.service] || { revenue: 0, count: 0 }
@@ -79,9 +107,14 @@ const FinancePanel = ({ bookings, getTotalPrice }) => {
             className="rounded-2xl border border-hairline bg-white p-5 shadow-card sm:p-6"
           >
             <div className="flex items-center gap-3 text-neutral-400">
-              <span className="h-1.5 w-1.5 rotate-45 bg-ink" />
-              <span className="eyebrow">{period.label}</span>
+              <span className={`h-1.5 w-1.5 rotate-45 ${period.isMonth ? 'bg-ink' : 'bg-neutral-300'}`} />
+              <span className={`eyebrow ${period.isMonth ? 'text-ink' : ''}`}>{period.label}</span>
             </div>
+
+            {/* Spelled out so there is no doubt which days the total covers */}
+            <p className="mt-2 text-[10px] uppercase tracking-wider2 text-neutral-400">
+              {prettyDay(period.start)} — {prettyDay(period.end)}
+            </p>
 
             <p className="mt-4 font-display text-3xl font-bold leading-none text-ink sm:text-4xl">
               €{period.revenue.toFixed(2)}
@@ -105,7 +138,7 @@ const FinancePanel = ({ bookings, getTotalPrice }) => {
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: PERIODS.length * 0.05, duration: 0.4, ease: [0.2, 0.7, 0.2, 1] }}
+          transition={{ delay: stats.byPeriod.length * 0.05, duration: 0.4, ease: [0.2, 0.7, 0.2, 1] }}
           className="rounded-2xl bg-ink p-5 sm:p-6"
         >
           <div className="flex items-center gap-3 text-white/40">
