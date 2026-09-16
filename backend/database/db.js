@@ -8,6 +8,7 @@ const __dirname = dirname(__filename);
 
 const DB_FILE = path.join(__dirname, 'appointments.json');
 const VACATIONS_FILE = path.join(__dirname, 'vacations.json');
+const ANNOUNCEMENTS_FILE = path.join(__dirname, 'announcements.json');
 
 // Initialize database
 let appointments = [];
@@ -47,6 +48,29 @@ const saveVacations = () => {
     fs.writeFileSync(VACATIONS_FILE, JSON.stringify(vacations, null, 2));
   } catch (error) {
     console.error('Error saving vacations:', error);
+  }
+};
+
+// Announcements (file-based mirror of the Postgres `announcements` table).
+// Standalone site messages — unrelated to vacations.
+let announcements = [];
+
+if (fs.existsSync(ANNOUNCEMENTS_FILE)) {
+  try {
+    announcements = JSON.parse(fs.readFileSync(ANNOUNCEMENTS_FILE, 'utf8'));
+  } catch (error) {
+    console.error('Error loading announcements:', error);
+    announcements = [];
+  }
+} else {
+  fs.writeFileSync(ANNOUNCEMENTS_FILE, JSON.stringify([], null, 2));
+}
+
+const saveAnnouncements = () => {
+  try {
+    fs.writeFileSync(ANNOUNCEMENTS_FILE, JSON.stringify(announcements, null, 2));
+  } catch (error) {
+    console.error('Error saving announcements:', error);
   }
 };
 
@@ -116,6 +140,35 @@ const db = {
     if (index !== -1) {
       vacations.splice(index, 1);
       saveVacations();
+      return true;
+    }
+    return false;
+  },
+
+  // --- Announcements ---
+  getAllAnnouncements: () => {
+    return [...announcements].sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
+  },
+
+  createAnnouncement: (announcement) => {
+    announcements.push(announcement);
+    saveAnnouncements();
+    return announcement;
+  },
+
+  updateAnnouncement: (id, updates) => {
+    const index = announcements.findIndex(a => a.id === id);
+    if (index === -1) return null;
+    announcements[index] = { ...announcements[index], ...updates };
+    saveAnnouncements();
+    return announcements[index];
+  },
+
+  removeAnnouncement: (id) => {
+    const index = announcements.findIndex(a => a.id === id);
+    if (index !== -1) {
+      announcements.splice(index, 1);
+      saveAnnouncements();
       return true;
     }
     return false;

@@ -6,14 +6,20 @@ import useBookingStore from '../store/bookingStore'
 import { SERVICES, ADDONS, formatTime, isValidBookingDate } from '../services/appointmentService'
 import { useLanguage } from '../i18n/LanguageContext'
 import { getTranslation } from '../i18n/translations'
+import { isDateOnVacation } from '../services/vacationApi'
 import FinancePanel from '../components/admin/FinancePanel'
 import VacationPanel from '../components/admin/VacationPanel'
+import AnnouncementPanel from '../components/admin/AnnouncementPanel'
 
 const RECENT_DAYS = 10
 const WEEKDAY_LABELS = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
 
 const Admin = () => {
-  const { bookings, removeBooking, loadBookings, vacations, loadVacations, addVacation, removeVacation } = useBookingStore()
+  const {
+    bookings, removeBooking, loadBookings,
+    vacations, loadVacations, addVacation, removeVacation,
+    announcements, loadAnnouncements, addAnnouncement, updateAnnouncement, removeAnnouncement
+  } = useBookingStore()
   const { language } = useLanguage()
   const t = (key) => getTranslation(language, key)
   const apiUrl = import.meta.env.VITE_API_URL
@@ -33,8 +39,9 @@ const Admin = () => {
     if (isAuthenticated) {
       loadBookings()
       loadVacations()
+      loadAnnouncements()
     }
-  }, [isAuthenticated, loadBookings, loadVacations])
+  }, [isAuthenticated, loadBookings, loadVacations, loadAnnouncements])
 
   const handleLogin = async (e) => {
     e.preventDefault()
@@ -444,7 +451,8 @@ const Admin = () => {
                 { id: 'calendar', label: 'By date' },
                 { id: 'recent', label: `Last ${RECENT_DAYS} days` },
                 { id: 'finance', label: 'Finances' },
-                { id: 'vacation', label: 'Time off' }
+                { id: 'vacation', label: 'Time off' },
+                { id: 'messages', label: 'Messages' }
               ].map((tab) => (
                 <button
                   key={tab.id}
@@ -469,6 +477,13 @@ const Admin = () => {
                 bookings={bookings}
                 onAdd={addVacation}
                 onRemove={removeVacation}
+              />
+            ) : viewMode === 'messages' ? (
+              <AnnouncementPanel
+                announcements={announcements}
+                onAdd={addAnnouncement}
+                onUpdate={updateAnnouncement}
+                onRemove={removeAnnouncement}
               />
             ) : viewMode === 'recent' ? (
               <div className="rounded-2xl border border-hairline bg-white p-4 shadow-card sm:p-8">
@@ -621,6 +636,9 @@ const Admin = () => {
                       const key = format(date, 'yyyy-MM-dd')
                       const isSelected = isSameDay(date, selectedDate)
                       const isBookable = monthGrid.bookable.has(key)
+                      // Closed to clients, but still clickable here so you can
+                      // review bookings that were already on the books.
+                      const isTimeOff = isDateOnVacation(key, vacations)
                       const count = bookingCountByDate[key] || 0
 
                       return (
@@ -629,19 +647,22 @@ const Admin = () => {
                           type="button"
                           onClick={() => setSelectedDate(date)}
                           disabled={!isBookable}
+                          title={isTimeOff ? 'Time off — closed for booking' : undefined}
                           className={`relative flex aspect-square flex-col items-center justify-center rounded-lg font-display text-sm font-semibold transition-all duration-300 ease-editorial ${
                             isSelected
                               ? 'bg-ink text-white'
-                              : isBookable
-                                ? 'border border-hairline bg-white text-ink hover:border-ink'
-                                : 'cursor-not-allowed border border-transparent text-neutral-300'
+                              : isTimeOff && isBookable
+                                ? 'border border-red-200 bg-red-50 text-red-500 line-through hover:border-red-400'
+                                : isBookable
+                                  ? 'border border-hairline bg-white text-ink hover:border-ink'
+                                  : 'cursor-not-allowed border border-transparent text-neutral-300'
                           }`}
                         >
                           {format(date, 'd')}
                           {count > 0 && (
                             <span
                               className={`absolute bottom-1.5 h-1 w-1 rounded-full ${
-                                isSelected ? 'bg-white/70' : 'bg-ink'
+                                isSelected ? 'bg-white/70' : isTimeOff ? 'bg-red-500' : 'bg-ink'
                               }`}
                               title={`${count} ${count === 1 ? 'reservation' : 'reservations'}`}
                             />
@@ -661,6 +682,13 @@ const Admin = () => {
                     <p className="mt-2 font-display text-lg font-bold">
                       {format(selectedDate, 'EEE, MMM d, yyyy')}
                     </p>
+
+                    {isDateOnVacation(format(selectedDate, 'yyyy-MM-dd'), vacations) && (
+                      <p className="mt-2.5 flex items-center gap-2 text-[10px] uppercase tracking-wider2 text-white/60">
+                        <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
+                        Time off — clients cannot book this day
+                      </p>
+                    )}
 
                     <div className="mt-5 grid grid-cols-2 gap-2">
                       <button

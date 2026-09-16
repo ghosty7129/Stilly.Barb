@@ -8,7 +8,7 @@ import useBookingStore from '../store/bookingStore'
 import { useLanguage } from '../i18n/LanguageContext'
 import { getTranslation, getServiceLabel } from '../i18n/translations'
 import { analytics } from '../services/analytics'
-import AbsenceNotice from '../components/AbsenceNotice'
+import SiteNotices from '../components/SiteNotices'
 import { isDateOnVacation } from '../services/vacationApi'
 
 const Booking = () => {
@@ -391,7 +391,7 @@ const Booking = () => {
 
   return (
     <div ref={topRef} className="min-h-screen bg-paper-soft pt-28 sm:pt-24">
-      <AbsenceNotice />
+      <SiteNotices />
       <Header />
 
       {/* Booking Form */}
@@ -686,6 +686,7 @@ const Booking = () => {
                       type="button"
                       onClick={() => isAbsentDate(date) ? null : handleDateSelect(date)}
                       disabled={isAbsentDate(date)}
+                      title={isAbsentDate(date) ? t('absenceClosedDay') : undefined}
                       className={`rounded-xl border p-3 transition-all duration-300 ease-editorial ${
                         isAbsentDate(date)
                           ? 'cursor-not-allowed border-red-200 bg-red-50 text-red-400 line-through'
@@ -699,8 +700,12 @@ const Booking = () => {
                       }`}>{format(date, 'EEE')}</div>
                       <div className="mt-0.5 font-display text-lg font-bold">{format(date, 'd')}</div>
                       <div className={`text-[10px] uppercase tracking-wider2 ${
-                        selectedDate && isSameDay(date, selectedDate) ? 'text-white/55' : 'text-neutral-400'
-                      }`}>{format(date, 'MMM')}</div>
+                        isAbsentDate(date)
+                          ? 'text-red-400 no-underline'
+                          : selectedDate && isSameDay(date, selectedDate)
+                            ? 'text-white/55'
+                            : 'text-neutral-400'
+                      }`}>{isAbsentDate(date) ? t('absenceClosedDay') : format(date, 'MMM')}</div>
                     </button>
                   ))}
                 </div>
@@ -781,6 +786,7 @@ const Booking = () => {
                                 type="button"
                                 onClick={() => { if (!isAbsentDate(date)) handleDateSelect(date) }}
                                 disabled={isAbsentDate(date)}
+                                title={isAbsentDate(date) ? t('absenceClosedDay') : undefined}
                                 className={`flex h-16 min-w-0 flex-col items-center justify-center rounded-lg px-1 py-2 text-center leading-tight transition-colors ${
                                   isAbsentDate(date)
                                     ? 'cursor-not-allowed border border-red-200 bg-red-50 text-red-400 line-through'

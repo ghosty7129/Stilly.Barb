@@ -137,6 +137,85 @@ export const removeVacation = async (id) => {
   return rowCount > 0
 }
 
+// ---------------------------------------------------------------------------
+// Announcements — standalone site messages, independent of vacations
+// ---------------------------------------------------------------------------
+
+const mapAnnouncement = (row) => ({
+  id: row.id,
+  titleBg: row.title_bg || '',
+  titleEn: row.title_en || '',
+  messageBg: row.message_bg || '',
+  messageEn: row.message_en || '',
+  style: row.style || 'banner',
+  active: Boolean(row.active),
+  startDate: row.start_date || '',
+  endDate: row.end_date || '',
+  createdAt: row.created_at
+})
+
+export const getAllAnnouncements = async () => {
+  const { rows } = await pool.query('SELECT * FROM announcements ORDER BY created_at DESC')
+  return rows.map(mapAnnouncement)
+}
+
+export const createAnnouncement = async (announcement) => {
+  const query = `INSERT INTO announcements(
+    id, title_bg, title_en, message_bg, message_en, style, active, start_date, end_date, created_at
+  ) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING *`
+
+  const values = [
+    announcement.id,
+    announcement.titleBg || '',
+    announcement.titleEn || '',
+    announcement.messageBg || '',
+    announcement.messageEn || '',
+    announcement.style || 'banner',
+    announcement.active !== false,
+    announcement.startDate || null,
+    announcement.endDate || null,
+    announcement.createdAt || new Date().toISOString()
+  ]
+
+  const { rows } = await pool.query(query, values)
+  return mapAnnouncement(rows[0])
+}
+
+const ANNOUNCEMENT_COLUMNS = {
+  titleBg: 'title_bg',
+  titleEn: 'title_en',
+  messageBg: 'message_bg',
+  messageEn: 'message_en',
+  style: 'style',
+  active: 'active',
+  startDate: 'start_date',
+  endDate: 'end_date'
+}
+
+export const updateAnnouncement = async (id, updates) => {
+  const fields = []
+  const values = []
+  let idx = 1
+
+  for (const [key, column] of Object.entries(ANNOUNCEMENT_COLUMNS)) {
+    if (updates[key] === undefined) continue
+    fields.push(`${column} = $${idx++}`)
+    values.push(key === 'startDate' || key === 'endDate' ? updates[key] || null : updates[key])
+  }
+
+  if (fields.length === 0) return null
+  values.push(id)
+
+  const query = `UPDATE announcements SET ${fields.join(', ')} WHERE id = $${idx} RETURNING *`
+  const { rows } = await pool.query(query, values)
+  return rows[0] ? mapAnnouncement(rows[0]) : null
+}
+
+export const removeAnnouncement = async (id) => {
+  const { rowCount } = await pool.query('DELETE FROM announcements WHERE id = $1', [id])
+  return rowCount > 0
+}
+
 export default {
   getAll,
   getById,
@@ -145,5 +224,9 @@ export default {
   update,
   getAllVacations,
   createVacation,
-  removeVacation
+  removeVacation,
+  getAllAnnouncements,
+  createAnnouncement,
+  updateAnnouncement,
+  removeAnnouncement
 }

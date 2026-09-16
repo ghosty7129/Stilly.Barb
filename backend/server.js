@@ -9,6 +9,7 @@ import { dirname } from 'path';
 import appointmentsRouter from './routes/appointments.js';
 import authRouter from './routes/auth.js';
 import vacationsRouter from './routes/vacations.js';
+import announcementsRouter from './routes/announcements.js';
 import { runMigrations } from './database/migrate.js';
 
 dotenv.config();
@@ -84,6 +85,7 @@ app.use(
 app.use('/api/auth', authRouter);
 app.use('/api/appointments', appointmentsRouter);
 app.use('/api/vacations', vacationsRouter);
+app.use('/api/announcements', announcementsRouter);
 
 // Health check
 app.get('/api/health', (req, res) => {

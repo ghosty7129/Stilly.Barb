@@ -34,3 +34,4 @@ pnpm-debug.log*
 
 # Local file-DB data (backend runs on Postgres in production)
 backend/database/vacations.json
+backend/database/announcements.json

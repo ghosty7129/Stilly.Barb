@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { appointmentAPI } from '../services/api'
 import { vacationAPI } from '../services/vacationApi'
+import { announcementAPI } from '../services/announcementApi'
 
 // Database key for localStorage (fallback)
 const DB_KEY = 'barber_reservations'
@@ -19,6 +20,7 @@ const saveToDatabase = (bookings) => {
 const useBookingStore = create((set, get) => ({
   bookings: initializeDatabase(),
   vacations: [],
+  announcements: [],
   loading: false,
   error: null,
 
@@ -41,6 +43,34 @@ const useBookingStore = create((set, get) => ({
   removeVacation: async (id) => {
     const result = await vacationAPI.remove(id)
     if (result.success) await get().loadVacations()
+    return result
+  },
+
+  /**
+   * Standalone site messages — public data, independent of vacations. Loading
+   * them never affects which days are bookable.
+   */
+  loadAnnouncements: async () => {
+    const announcements = await announcementAPI.getAll()
+    set({ announcements })
+    return announcements
+  },
+
+  addAnnouncement: async (announcement) => {
+    const result = await announcementAPI.create(announcement)
+    if (result.success) await get().loadAnnouncements()
+    return result
+  },
+
+  updateAnnouncement: async (id, updates) => {
+    const result = await announcementAPI.update(id, updates)
+    if (result.success) await get().loadAnnouncements()
+    return result
+  },
+
+  removeAnnouncement: async (id) => {
+    const result = await announcementAPI.remove(id)
+    if (result.success) await get().loadAnnouncements()
     return result
   },
   

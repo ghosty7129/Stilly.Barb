@@ -134,6 +134,10 @@ export const translations = {
     absenceNoticeBody: 'Dear clients, I will be away from {start} to {end}. Please book your appointment before or after this period.',
     absenceUnderstood: 'Got it',
     absenceClosedDay: 'Closed',
+
+    // Standalone site messages
+    noticeDefaultTitle: 'Notice',
+    noticeDismiss: 'Dismiss',
   },
 
   bg: {
@@ -275,6 +279,10 @@ export const translations = {
     absenceNoticeBody: 'Уважаеми клиенти, ще отсъствам от {start} до {end}. Моля, запишете своя час преди или след този период.',
     absenceUnderstood: 'Разбрах',
     absenceClosedDay: 'Затворено',
+
+    // Standalone site messages
+    noticeDefaultTitle: 'Съобщение',
+    noticeDismiss: 'Затвори',
   }
 }
 

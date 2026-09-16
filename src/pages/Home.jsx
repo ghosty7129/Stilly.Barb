@@ -5,12 +5,12 @@ import About from '../components/About'
 import Gallery from '../components/Gallery'
 import Contact from '../components/Contact'
 import Footer from '../components/Footer'
-import AbsenceNotice from '../components/AbsenceNotice'
+import SiteNotices from '../components/SiteNotices'
 
 const Home = () => {
   return (
     <>
-      <AbsenceNotice />
+      <SiteNotices />
       <Header />
       <main>
         <Hero />
