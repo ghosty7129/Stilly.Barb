@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import useBookingStore from '../store/bookingStore'
 import { getActiveAnnouncement } from '../services/vacationApi'
@@ -47,6 +47,7 @@ const SiteNotices = () => {
   const t = (key) => getTranslation(language, key)
 
   const [dismissed, setDismissed] = useState(() => new Set())
+  const bannerStack = useRef(null)
 
   useEffect(() => {
     loadVacations()
@@ -108,6 +109,30 @@ const SiteNotices = () => {
   const popup = visible.find((notice) => notice.style === 'popup')
   const banners = visible.filter((notice) => notice.style === 'banner')
 
+  // The banners are fixed to the bottom, so on a phone they would sit on top of
+  // whatever ends the page — the booking form's submit button, for one. Pad the
+  // page by however tall the stack actually is.
+  useEffect(() => {
+    const node = bannerStack.current
+    if (!node) {
+      document.body.style.paddingBottom = ''
+      return
+    }
+
+    const apply = () => {
+      document.body.style.paddingBottom = `${node.offsetHeight}px`
+    }
+
+    apply()
+    const observer = new ResizeObserver(apply)
+    observer.observe(node)
+
+    return () => {
+      observer.disconnect()
+      document.body.style.paddingBottom = ''
+    }
+  }, [banners.length])
+
   return (
     <>
       <AnimatePresence>
@@ -124,7 +149,7 @@ const SiteNotices = () => {
 
       {/* Banners sit along the bottom so they never collide with the header. */}
       {banners.length > 0 && (
-        <div className="pointer-events-none fixed inset-x-0 bottom-0 z-30 flex flex-col gap-2 p-3 sm:p-5">
+        <div ref={bannerStack} className="pointer-events-none fixed inset-x-0 bottom-0 z-30 flex flex-col gap-2 p-3 sm:p-5">
           <AnimatePresence initial={false}>
             {banners.map((notice) => (
               <motion.div
@@ -134,14 +159,14 @@ const SiteNotices = () => {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 12 }}
                 transition={{ duration: 0.35, ease: [0.2, 0.7, 0.2, 1] }}
-                className="pointer-events-auto mx-auto flex w-full max-w-2xl items-start gap-4 rounded-2xl bg-ink px-5 py-4 text-white shadow-lift"
+                className="pointer-events-auto mx-auto flex w-full max-w-2xl items-start gap-3 rounded-2xl bg-ink px-4 py-3.5 text-white shadow-lift sm:gap-4 sm:px-5 sm:py-4"
                 role="status"
               >
                 <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rotate-45 bg-white/70" />
 
                 <div className="min-w-0 flex-1">
-                  <p className="eyebrow text-white/45">{notice.title}</p>
-                  <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-white/90">
+                  <p className="eyebrow break-words text-white/45">{notice.title}</p>
+                  <p className="mt-2 whitespace-pre-line break-words text-sm leading-relaxed text-white/90">
                     {notice.body}
                   </p>
                 </div>

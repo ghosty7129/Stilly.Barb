@@ -699,12 +699,12 @@ const Booking = () => {
                         selectedDate && isSameDay(date, selectedDate) ? 'text-white/55' : 'text-neutral-400'
                       }`}>{format(date, 'EEE')}</div>
                       <div className="mt-0.5 font-display text-lg font-bold">{format(date, 'd')}</div>
-                      <div className={`text-[10px] uppercase tracking-wider2 ${
+                      <div className={`truncate uppercase ${
                         isAbsentDate(date)
-                          ? 'text-red-400 no-underline'
+                          ? 'text-[8px] tracking-[0.04em] text-red-400 no-underline'
                           : selectedDate && isSameDay(date, selectedDate)
-                            ? 'text-white/55'
-                            : 'text-neutral-400'
+                            ? 'text-[10px] tracking-wider2 text-white/55'
+                            : 'text-[10px] tracking-wider2 text-neutral-400'
                       }`}>{isAbsentDate(date) ? t('absenceClosedDay') : format(date, 'MMM')}</div>
                     </button>
                   ))}

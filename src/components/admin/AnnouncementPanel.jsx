@@ -290,7 +290,7 @@ const AnnouncementPanel = ({ announcements, onAdd, onUpdate, onRemove }) => {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: Math.min(index * 0.04, 0.3) }}
-                    className={`flex flex-wrap items-start gap-x-4 gap-y-3 rounded-xl border p-4 transition-colors sm:p-5 ${
+                    className={`flex flex-wrap items-start gap-x-4 gap-y-3 rounded-xl border p-4 transition-colors sm:flex-nowrap sm:p-5 ${
                       isLive ? 'border-hairline hover:border-ink' : 'border-hairline bg-paper-soft'
                     }`}
                   >
@@ -300,7 +300,7 @@ const AnnouncementPanel = ({ announcements, onAdd, onUpdate, onRemove }) => {
                       }`}
                     />
 
-                    <div className="min-w-0 flex-1">
+                    <div className="min-w-0 flex-1 basis-0">
                       <p className={`font-display text-base font-bold ${isLive ? 'text-ink' : 'text-neutral-400'}`}>
                         {announcement.titleBg || announcement.titleEn || 'Съобщение'}
                       </p>
@@ -318,7 +318,7 @@ const AnnouncementPanel = ({ announcements, onAdd, onUpdate, onRemove }) => {
                       </p>
                     </div>
 
-                    <div className="flex flex-shrink-0 items-center gap-2">
+                    <div className="flex w-full flex-shrink-0 items-center justify-end gap-2 border-t border-hairline pt-3 sm:w-auto sm:border-0 sm:pt-0">
                       <button
                         type="button"
                         onClick={() => handleToggle(announcement)}

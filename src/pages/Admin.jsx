@@ -445,8 +445,9 @@ const Admin = () => {
               </dl>
             </div>
 
-            {/* View switch */}
-            <div className="mb-8 inline-flex rounded-full border border-hairline bg-white p-1">
+            {/* View switch — a row of pills on desktop, a grid on phones where
+                five of them would run off the screen. */}
+            <div className="mb-8 grid grid-cols-2 gap-1.5 rounded-2xl border border-hairline bg-white p-1.5 sm:inline-flex sm:gap-0 sm:rounded-full sm:p-1">
               {[
                 { id: 'calendar', label: 'By date' },
                 { id: 'recent', label: `Last ${RECENT_DAYS} days` },
@@ -458,7 +459,7 @@ const Admin = () => {
                   key={tab.id}
                   type="button"
                   onClick={() => setViewMode(tab.id)}
-                  className={`rounded-full px-5 py-2.5 text-[10px] font-semibold uppercase tracking-eyebrow transition-all duration-300 ease-editorial ${
+                  className={`rounded-full px-3 py-2.5 text-[10px] font-semibold uppercase leading-tight tracking-wider2 transition-all duration-300 ease-editorial last:col-span-2 sm:whitespace-nowrap sm:px-5 sm:leading-normal sm:tracking-eyebrow sm:last:col-span-1 ${
                     viewMode === tab.id
                       ? 'bg-ink text-white'
                       : 'text-neutral-500 hover:text-ink'
@@ -685,8 +686,8 @@ const Admin = () => {
 
                     {isDateOnVacation(format(selectedDate, 'yyyy-MM-dd'), vacations) && (
                       <p className="mt-2.5 flex items-center gap-2 text-[10px] uppercase tracking-wider2 text-white/60">
-                        <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
-                        Time off — clients cannot book this day
+                        <span className="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-red-500" />
+                        Time off — closed for booking
                       </p>
                     )}
 
