@@ -1,3 +1,5 @@
+import { SCHEDULE_CHANGE_DATE } from '../services/appointmentService'
+
 // Translations for English and Bulgarian
 // Haircut style names are kept in English
 
@@ -105,6 +107,8 @@ export const translations = {
     followUs: 'Follow Us',
     mondayFriday: 'Monday - Friday: 10:00 - 19:00',
     saturdaySunday: 'Saturday - Sunday: 11:00 - 17:00',
+    hoursMondayTuesday: 'Monday - Tuesday: 11:00 - 17:00',
+    hoursWednesdaySunday: 'Wednesday - Sunday: 10:00 - 19:00',
     closed: 'Closed',
     exploreSevices: 'Explore Services',
     gallerySubtitle: 'Browse some of the haircuts of our satisfied clients.',
@@ -250,6 +254,8 @@ export const translations = {
     followUs: 'Последвайте ни',
     mondayFriday: 'Понеделник - Петък: 10:00 - 19:00',
     saturdaySunday: 'Събота - Неделя: 11:00 - 17:00',
+    hoursMondayTuesday: 'Понеделник - Вторник: 11:00 - 17:00',
+    hoursWednesdaySunday: 'Сряда - Неделя: 10:00 - 19:00',
     closed: 'Затворено',
     exploreSevices: 'Разгледайте услугите',
     gallerySubtitle: 'Разгледайте някои от подстрижките на нашите доволни клиенти.',
@@ -307,5 +313,20 @@ export const getServiceLabel = (language, id, fallback) => {
 
 export const getTranslation = (language, key) => {
   return translations[language]?.[key] || translations.en[key] || key
+}
+
+/**
+ * The two opening-hours lines to display, in week order. Swaps over on the day
+ * the new schedule starts so the site never advertises hours it is not keeping.
+ */
+export const getBusinessHoursLines = (language, today = new Date()) => {
+  const pad = (n) => String(n).padStart(2, '0')
+  const key = `${today.getFullYear()}-${pad(today.getMonth() + 1)}-${pad(today.getDate())}`
+
+  const keys = key >= SCHEDULE_CHANGE_DATE
+    ? ['hoursMondayTuesday', 'hoursWednesdaySunday']
+    : ['mondayFriday', 'saturdaySunday']
+
+  return keys.map((name) => getTranslation(language, name))
 }
 

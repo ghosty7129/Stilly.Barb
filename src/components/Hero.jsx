@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { useLanguage } from '../i18n/LanguageContext'
-import { getTranslation } from '../i18n/translations'
+import { getTranslation, getBusinessHoursLines } from '../i18n/translations'
 
 const ease = [0.2, 0.7, 0.2, 1]
 
@@ -90,8 +90,11 @@ const Hero = () => {
         >
           <div className="border-t border-hairline-light pt-5">
             <p className="eyebrow text-white/40">{t('businessHours')}</p>
-            <p className="mt-3 text-[13px] text-white/80 sm:text-sm">{t('mondayFriday')}</p>
-            <p className="mt-1 text-[13px] text-white/80 sm:text-sm">{t('saturdaySunday')}</p>
+            {getBusinessHoursLines(language).map((line, index) => (
+              <p key={line} className={`${index === 0 ? 'mt-3' : 'mt-1'} text-[13px] text-white/80 sm:text-sm`}>
+                {line}
+              </p>
+            ))}
 
             <div className="mt-5 flex items-center gap-3 sm:mt-6">
               <a

@@ -1,5 +1,5 @@
 import { useLanguage } from '../i18n/LanguageContext'
-import { getTranslation } from '../i18n/translations'
+import { getTranslation, getBusinessHoursLines } from '../i18n/translations'
 import { Link } from 'react-router-dom'
 
 const Footer = () => {
@@ -62,8 +62,9 @@ const Footer = () => {
           <div>
             <h4 className="eyebrow text-white/35">{t('businessHours')}</h4>
             <ul className="mt-5 space-y-3 text-sm text-white/65">
-              <li>{t('mondayFriday')}</li>
-              <li>{t('saturdaySunday')}</li>
+              {getBusinessHoursLines(language).map((line) => (
+                <li key={line}>{line}</li>
+              ))}
             </ul>
           </div>
 

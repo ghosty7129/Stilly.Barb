@@ -10,9 +10,25 @@ const PHONE_REGEX = /^\d{10}$/;
 const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
 const TIME_REGEX = /^([01]\d|2[0-3]):(00|30)$/;
 
-const BUSINESS_HOURS = {
-  weekday: { start: 10, end: 19 },
-  weekend: { start: 11, end: 17 }
+// The shop moved to a new schedule on 1 October 2026. Both tables are kept so
+// that days still inside the old one validate against the hours they were open
+// under. Day index matches Date#getUTCDay — 0 = Sunday.
+// Keep in sync with src/services/appointmentService.js.
+const SCHEDULE_CHANGE_DATE = '2026-10-01';
+
+const LONG_DAY = { start: 10, end: 19 };   // 10:00 - 19:00
+const SHORT_DAY = { start: 11, end: 17 };  // 11:00 - 17:00
+
+// Until 30 September 2026: Mon-Fri long, Sat-Sun short.
+const HOURS_BEFORE_CHANGE = {
+  0: SHORT_DAY, 1: LONG_DAY, 2: LONG_DAY, 3: LONG_DAY,
+  4: LONG_DAY, 5: LONG_DAY, 6: SHORT_DAY
+};
+
+// From 1 October 2026: Wed-Sun long, Mon-Tue short.
+const HOURS_FROM_CHANGE = {
+  0: LONG_DAY, 1: SHORT_DAY, 2: SHORT_DAY, 3: LONG_DAY,
+  4: LONG_DAY, 5: LONG_DAY, 6: LONG_DAY
 };
 
 const SERVICES = {
@@ -46,7 +62,8 @@ const getDayOfWeekFromIsoDate = (dateString) => {
 
 const getBusinessHoursForDate = (dateString) => {
   const dayOfWeek = getDayOfWeekFromIsoDate(dateString);
-  return dayOfWeek === 0 || dayOfWeek === 6 ? BUSINESS_HOURS.weekend : BUSINESS_HOURS.weekday;
+  const table = dateString >= SCHEDULE_CHANGE_DATE ? HOURS_FROM_CHANGE : HOURS_BEFORE_CHANGE;
+  return table[dayOfWeek];
 };
 
 const parseMinutes = (time) => {

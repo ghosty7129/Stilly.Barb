@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { useLanguage } from '../i18n/LanguageContext'
-import { getTranslation } from '../i18n/translations'
+import { getTranslation, getBusinessHoursLines } from '../i18n/translations'
 import Reveal from './Reveal'
 
 const Contact = () => {
@@ -15,8 +15,7 @@ const Contact = () => {
     return { label: value.slice(0, separator), time: value.slice(separator + 2) }
   }
 
-  const weekdayHours = splitHours(t('mondayFriday'))
-  const weekendHours = splitHours(t('saturdaySunday'))
+  const [firstHours, secondHours] = getBusinessHoursLines(language).map(splitHours)
 
   const intro = t('contactIntro')
 
@@ -89,12 +88,12 @@ const Contact = () => {
 
                 <dl className="mt-5 space-y-4">
                   <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-b border-hairline-light pb-3">
-                    <dt className="text-sm text-white/55">{weekdayHours.label}</dt>
-                    <dd className="font-display text-base font-semibold text-white">{weekdayHours.time}</dd>
+                    <dt className="text-sm text-white/55">{firstHours.label}</dt>
+                    <dd className="font-display text-base font-semibold text-white">{firstHours.time}</dd>
                   </div>
                   <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-                    <dt className="text-sm text-white/55">{weekendHours.label}</dt>
-                    <dd className="font-display text-base font-semibold text-white">{weekendHours.time}</dd>
+                    <dt className="text-sm text-white/55">{secondHours.label}</dt>
+                    <dd className="font-display text-base font-semibold text-white">{secondHours.time}</dd>
                   </div>
                 </dl>
               </div>

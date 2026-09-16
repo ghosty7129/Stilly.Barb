@@ -1,11 +1,41 @@
-// Business hours per day of week
-// Weekdays (Mon-Fri): 10:00 - 19:00
-// Weekends (Sat-Sun): 11:00 - 17:00
-// Each appointment slot is 30 minutes
+// Business hours per day of week. Each appointment slot is 30 minutes.
+//
+// The shop moved to a new schedule on 1 October 2026. Both tables are kept
+// because the booking window runs months ahead: a day in late September has to
+// keep offering the hours it was open under, while October onwards uses the new
+// ones. Day index matches Date#getUTCDay — 0 = Sunday.
 
+export const SCHEDULE_CHANGE_DATE = '2026-10-01'
+
+const LONG_DAY = { start: 10, end: 19 }   // 10:00 - 19:00
+const SHORT_DAY = { start: 11, end: 17 }  // 11:00 - 17:00
+
+// Until 30 September 2026: Mon-Fri long, Sat-Sun short.
+const HOURS_BEFORE_CHANGE = {
+  0: SHORT_DAY, // Sunday
+  1: LONG_DAY,  // Monday
+  2: LONG_DAY,  // Tuesday
+  3: LONG_DAY,  // Wednesday
+  4: LONG_DAY,  // Thursday
+  5: LONG_DAY,  // Friday
+  6: SHORT_DAY  // Saturday
+}
+
+// From 1 October 2026: Wed-Sun long, Mon-Tue short.
+const HOURS_FROM_CHANGE = {
+  0: LONG_DAY,  // Sunday
+  1: SHORT_DAY, // Monday
+  2: SHORT_DAY, // Tuesday
+  3: LONG_DAY,  // Wednesday
+  4: LONG_DAY,  // Thursday
+  5: LONG_DAY,  // Friday
+  6: LONG_DAY   // Saturday
+}
+
+// Kept for anything reading the current shape of the working week.
 export const BUSINESS_HOURS = {
-  weekday: { start: 10, end: 19 },    // Mon-Fri: 10:00 AM - 7 PM
-  weekend: { start: 11, end: 17 }     // Sat-Sun: 11:00 AM - 5 PM
+  long: LONG_DAY,
+  short: SHORT_DAY
 }
 
 // Legacy fallback for compatibility
@@ -42,20 +72,16 @@ export const ADDONS = [
 ]
 
 /**
- * Get business hours for a specific date based on day of week
+ * Get business hours for a specific date, from the schedule that applies on it.
  * @param {string} dateString - Date in YYYY-MM-DD format
  * @returns {Object} {start: hour, end: hour} for that day
  */
-const getBusinessHoursForDate = (dateString) => {
+export const getBusinessHoursForDate = (dateString) => {
   const date = new Date(dateString + 'T00:00:00Z')
   const dayOfWeek = date.getUTCDay() // 0=Sunday, 1=Monday, ..., 6=Saturday
-  
-  // Saturday (6) or Sunday (0) = weekend
-  if (dayOfWeek === 0 || dayOfWeek === 6) {
-    return BUSINESS_HOURS.weekend
-  }
-  // Monday-Friday = weekday
-  return BUSINESS_HOURS.weekday
+
+  const table = dateString >= SCHEDULE_CHANGE_DATE ? HOURS_FROM_CHANGE : HOURS_BEFORE_CHANGE
+  return table[dayOfWeek]
 }
 
 /**
