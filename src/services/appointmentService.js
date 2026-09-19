@@ -7,8 +7,9 @@
 
 export const SCHEDULE_CHANGE_DATE = '2026-10-01'
 
-const LONG_DAY = { start: 10, end: 19 }   // 10:00 - 19:00
-const SHORT_DAY = { start: 11, end: 17 }  // 11:00 - 17:00
+const LONG_DAY = { start: 10, end: 19 }        // 10:00 - 19:00
+const SHORT_DAY = { start: 11, end: 17 }       // 11:00 - 17:00
+const AFTERNOON_DAY = { start: 13, end: 19 }   // 13:00 - 19:00
 
 // Until 30 September 2026: Mon-Fri long, Sat-Sun short.
 const HOURS_BEFORE_CHANGE = {
@@ -21,11 +22,11 @@ const HOURS_BEFORE_CHANGE = {
   6: SHORT_DAY  // Saturday
 }
 
-// From 1 October 2026: Wed-Sun long, Mon-Tue short.
+// From 1 October 2026: Wed-Sun long, Mon-Tue afternoons.
 const HOURS_FROM_CHANGE = {
-  0: LONG_DAY,  // Sunday
-  1: SHORT_DAY, // Monday
-  2: SHORT_DAY, // Tuesday
+  0: LONG_DAY,      // Sunday
+  1: AFTERNOON_DAY, // Monday
+  2: AFTERNOON_DAY, // Tuesday
   3: LONG_DAY,  // Wednesday
   4: LONG_DAY,  // Thursday
   5: LONG_DAY,  // Friday
